@@ -30,5 +30,6 @@ class BasicModel(nn.Module):
         max_hs = max_pooling_with_mask(hidden, mask)
         hs = self.dropout(max_hs)
         out = self.fc(hs)
-        out = F.softmax(out, dim=1)
+        # out = F.softmax(out, dim=1)
+        out = F.tanh(out)
         return out

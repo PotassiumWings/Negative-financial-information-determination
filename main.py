@@ -29,6 +29,9 @@ def main(config: TrainingArguments):
     logger.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
 
+    for x in config:
+        logging.info(x)
+
     setup_seed(config.seed)
 
     logging.info("Loading model...")
@@ -37,7 +40,7 @@ def main(config: TrainingArguments):
 
     logging.info("Loading dataset...")
     dataset = Dataset(config)
-    trainer = Trainer(config, model, dataset)
+    trainer = Trainer(config, model, dataset, time)
 
     logging.info("Start Training.")
     trainer.train()

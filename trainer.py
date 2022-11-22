@@ -15,17 +15,18 @@ from configs.arguments import TrainingArguments
 
 
 class Trainer:
-    def __init__(self, config: TrainingArguments, model: nn.Module, dataset):
+    def __init__(self, config: TrainingArguments, model: nn.Module, dataset, time: str):
         self.model = model
         self.dataset = dataset
         self.config = config
+        self.time = time
         # loss: (b, 2) (b) -> num
         self.loss = nn.CrossEntropyLoss(reduction="none")
         if config.loss != 'CrossEntropy':
             # if config.loss == 'Accuracy':
             #     self.loss = accuracy_loss
             assert False
-        self.save_path = './saved_dict/' + self.config.model_name + '.ckpt'
+        self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
     def train(self):
         train_iter, val_iter = self.dataset.train_iter, self.dataset.val_iter
