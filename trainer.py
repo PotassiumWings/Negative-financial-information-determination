@@ -21,7 +21,7 @@ class Trainer:
         optimizer = Adam(self.model.parameters(), lr=self.config.learning_rate)
         best_val_loss = float('inf')
         last_improve = 0  # last time to update best_val_loss
-        current_batch = 0
+        current_batch = 1
 
         for epoch in range(self.config.num_epoches):
             train_iter.shuffle()
@@ -32,7 +32,7 @@ class Trainer:
                 # outputs: [8, 2]
                 outputs = self.model(texts)
                 self.model.zero_grad()
-                loss = torch.sum(self.loss(outputs, labels))
+                loss = torch.sum(self.loss(outputs, labels))  # TODO: check this loss
                 loss.backward()
                 optimizer.step()
                 logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, loss: {loss.item()}")
@@ -90,8 +90,10 @@ class Trainer:
         return result
 
     def calc_train_acc(self, trues, predicts):
-        length = len(trues)
+        length = len(trues) * self.config.batch_size
         tot = 0
         for true, predict in zip(trues, predicts):
-            tot += predict[true]
+            assert len(true) == len(predict) == self.config.batch_size
+            for i in range(len(true)):
+                tot += predict[i][true[i]]
         return tot / length

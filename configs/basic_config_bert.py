@@ -24,7 +24,7 @@ class BasicConfig(object):
 
         self.learning_rate = 5e-5
         self.num_epoches = 10
-        self.show_period = 5
+        self.show_period = 10
 
         self.hidden_dropout_prob = 0.1
         self.hidden_size = 21128
