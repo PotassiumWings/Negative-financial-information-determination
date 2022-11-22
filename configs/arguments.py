@@ -21,12 +21,14 @@ class TrainingArguments(BaseModel):
     show_period: int = Field(10)
 
     hidden_dropout_prob: float = Field(0.1)
-    hidden_size: int = Field(21128)
+    hidden_size: int = Field(768)
 
     # more than 100 batch no improve, stop
     early_stop_diff: int = Field(1000)
 
     add_special_tokens: bool = Field(False)
+
+    seed: int = Field(0)
 
 
 # Create Parser and Parse Args
