@@ -19,19 +19,25 @@ class Dataset:
 
     def _load_data(self, filepath, is_test=False):
         contents = []
-        with open(filepath, 'r', encoding="utf-8") as f:
+        with open(filepath, 'r', encoding="GB18030") as f:
             sr = csv.reader(f)
             for row in tqdm.tqdm(sr):
                 # first row
                 if row[0] == 'id':
+                    if is_test:
+                        # assert row[1] == 'text' and row[2] == 'entity'
+                        assert row[2] == 'text' and row[3] == 'entity'
+                    else:
+                        # assert row[1] == 'text' and row[2] == 'entity' and row[3] == 'negative'
+                        assert row[2] == 'text' and row[3] == 'entity' and row[4] == 'negative'
                     continue
 
                 if is_test:
                     # id, text, entities
-                    label = int(row[0])
+                    label = row[0]
                 else:
                     # id, text, entities, label, entities_real
-                    label = int(row[3])
+                    label = int(row[4])
 
                 # only text TODO: add_special_tokens with small dataset
                 text = row[1]

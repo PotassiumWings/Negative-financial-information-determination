@@ -1,13 +1,12 @@
 import torch
-from transformers import BertTokenizer, BertModel
+from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 
 class BasicConfig(object):
     def __init__(self):
-        self.dataPath = "./train"  # 数据所在地址
-        self.model_name = "bert"  # BERT模型所在地址
-        self.tokenizer = BertTokenizer.from_pretrained("./" + self.model_name)
-        self.model = BertModel.from_pretrained("./" + self.model_name)
+        self.model_name = "bert-base-chinese"  # BERT模型所在地址
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.model = AutoModelForMaskedLM.from_pretrained(self.model_name)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.train_file = "./data/train.csv"
         self.test_file = "./data/test.csv"
@@ -25,10 +24,10 @@ class BasicConfig(object):
 
         self.learning_rate = 5e-5
         self.num_epoches = 10
-        self.show_period = 10
+        self.show_period = 1
 
         self.hidden_dropout_prob = 0.1
-        self.hidden_size = 768
+        self.hidden_size = 21128
 
         # more than 100 batch no improve, stop
         self.early_stop_diff = 100

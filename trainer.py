@@ -15,7 +15,7 @@ class Trainer:
         self.loss = nn.CrossEntropyLoss(reduction="none")
 
     def train(self):
-        train_iter, val_iter = self.dataset.get_train_val_data_iter()
+        train_iter, val_iter = self.dataset.train_iter, self.dataset.val_iter
         # set state
         self.model.train()
         optimizer = Adam(self.model.parameters(), lr=self.config.learning_rate)
@@ -26,7 +26,10 @@ class Trainer:
         for epoch in range(self.config.num_epoches):
             train_iter.shuffle()
             trues, predicts = [], []
+            # texts: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
+            # labels: tensor[8]
             for i, (texts, labels) in enumerate(train_iter):
+                # outputs: [8, 2]
                 outputs = self.model(texts)
                 self.model.zero_grad()
                 loss = torch.sum(self.loss(outputs, labels))
@@ -56,14 +59,18 @@ class Trainer:
     def eval(self, val_iter):
         self.model.eval()
         total_loss = 0
+        trues, predicts = [], []
         with torch.no_grad():
             for i, (texts, labels) in enumerate(val_iter):
                 outputs = self.model(texts)
-                labels = labels.cpu().numpy()
-                predicts = outputs.cpu().numpy()
-                loss = self.loss(predicts, labels)
-                total_loss += loss.item()
-        return total_loss
+                loss = self.loss(outputs, labels)
+                total_loss += torch.sum(loss).item()
+
+                trues.append(labels.cpu())
+                predicts.append(outputs.cpu())
+
+        val_acc = self.calc_train_acc(trues, predicts)
+        return val_acc, total_loss
 
     def test(self):
         self.model.load_state_dict(torch.load(self.config.save_path))
@@ -82,6 +89,5 @@ class Trainer:
         length = len(trues)
         tot = 0
         for true, predict in zip(trues, predicts):
-            if true == predict:
-                tot += 1
+            tot += predict[true]
         return tot / length
