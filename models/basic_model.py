@@ -32,5 +32,5 @@ class BasicModel(nn.Module):
         out = self.fc(hs).squeeze()
         # out = F.softmax(out, dim=1)
         # out = F.tanh(out)
-        out = F.sigmoid(out)
+        # out = F.sigmoid(out)
         return out

@@ -75,6 +75,14 @@ class Dataset:
                DatasetIterator(valid_contents, self.config.batch_size, self.device)
 
 
+def _smooth(val):
+    if val == 0:
+        return 0.001
+    if val == 1:
+        return 0.999
+    raise ValueError(f"Val {val} is not 0 nor 1")
+
+
 class DatasetIterator(object):
     def __init__(self, batches, batch_size, device):
         self.batch_size = batch_size
@@ -89,7 +97,7 @@ class DatasetIterator(object):
 
     def _to_tensor(self, datas):
         x = torch.LongTensor([_[0] for _ in datas]).to(self.device)
-        y = torch.FloatTensor([_[1] for _ in datas]).to(self.device)
+        y = torch.FloatTensor([_smooth(_[1]) for _ in datas]).to(self.device)
 
         seq_len = torch.LongTensor([_[2] for _ in datas]).to(self.device)
         mask = torch.LongTensor([_[3] for _ in datas]).to(self.device)

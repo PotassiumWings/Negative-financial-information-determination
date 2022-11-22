@@ -14,7 +14,7 @@ class Trainer:
         self.config = config
         self.time = time
         # loss: (b) (b) -> num
-        self.loss = nn.BCELoss()
+        self.loss = nn.BCEWithLogitsLoss()
         self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
     def train(self):
@@ -70,13 +70,11 @@ class Trainer:
         with torch.no_grad():
             for i, (texts, labels) in enumerate(val_iter):
                 outputs = self.model(texts)
-                # loss = self.loss(outputs, labels)
-                # total_loss += loss.item()
                 trues.append(labels.cpu())
                 predicts.append(outputs.cpu())
 
         val_acc = self.calc_train_acc(trues, predicts)
-        val_loss = self.loss(torch.concat(trues), torch.concat(predicts))
+        val_loss = self.loss(torch.cat(trues), torch.cat(predicts))
         return val_acc, val_loss
 
     def test(self):
@@ -98,6 +96,6 @@ class Trainer:
         for true, predict in zip(trues, predicts):
             assert len(true) == len(predict) == self.config.batch_size
             for i in range(len(true)):
-                if true[i] and predict[i] > 0.5 or not true[i] and predict[i] < 0.5:
+                if true[i] and predict[i] > 0 or not true[i] and predict[i] < 0:
                     tot += 1
         return tot / length
