@@ -20,11 +20,11 @@ class BasicConfig(object):
         self.batch_size = 8
 
         # train : valid
-        self.train_percent = 0.8
+        self.train_percent = 0.9
 
         self.learning_rate = 5e-5
         self.num_epoches = 10
-        self.show_period = 1
+        self.show_period = 5
 
         self.hidden_dropout_prob = 0.1
         self.hidden_size = 21128

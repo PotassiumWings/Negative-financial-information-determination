@@ -1,3 +1,5 @@
 .idea/*
 bert-base-chinese/*
 data/*
+logs/*
+saved_dict/*

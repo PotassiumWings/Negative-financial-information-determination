@@ -35,6 +35,7 @@ class Trainer:
                 loss = torch.sum(self.loss(outputs, labels))
                 loss.backward()
                 optimizer.step()
+                logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, loss: {loss.item()}")
 
                 trues.append(labels.cpu())
                 predicts.append(outputs.cpu())
@@ -43,13 +44,14 @@ class Trainer:
                     # output accuracy
                     train_acc = self.calc_train_acc(trues, predicts)
                     val_acc, val_loss = self.eval(val_iter)
+                    logging.info(f"Ep {epoch}/{self.config.num_epoches}, iter {current_batch},"
+                                f" train loss {loss.item()}, train acc {train_acc},"
+                                f" val loss {val_loss}, val acc {val_acc}, last upd {last_improve}")
                     if val_loss < best_val_loss:
                         best_val_loss = val_loss
                         torch.save(self.model.state_dict(), self.config.save_path)
                         last_improve = current_batch
-                    logging.log(f"Ep {epoch}/{self.config.num_epoches}, iter {current_batch},"
-                                f" train loss {loss.item()}, train acc {train_acc},"
-                                f" val loss {val_loss}, val acc {val_acc}, last upd {last_improve}")
+                        logging.info("Good, saving model.")
                     self.model.train()
                 current_batch += 1
                 if current_batch - last_improve > self.config.early_stop_diff:
@@ -60,8 +62,10 @@ class Trainer:
         self.model.eval()
         total_loss = 0
         trues, predicts = [], []
+        logging.info("Evaluating...")
         with torch.no_grad():
             for i, (texts, labels) in enumerate(val_iter):
+                logging.info(f"Iter {i}/{len(val_iter)}...")
                 outputs = self.model(texts)
                 loss = self.loss(outputs, labels)
                 total_loss += torch.sum(loss).item()
