@@ -30,6 +30,8 @@ class TrainingArguments(BaseModel):
 
     seed: int = Field(0)
 
+    loss: str = Field("CrossEntropy")
+
 
 # Create Parser and Parse Args
 parser = pydantic_argparse.ArgumentParser(

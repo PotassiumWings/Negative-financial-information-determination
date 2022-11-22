@@ -7,13 +7,24 @@ from torch.optim import Adam
 from configs.arguments import TrainingArguments
 
 
+# def accuracy_loss(outputs, labels):
+#     # outputs: [b, 2]
+#     # labels: [b]
+#     result = 0
+#     return torch.Tensor([0])
+
+
 class Trainer:
     def __init__(self, config: TrainingArguments, model: nn.Module, dataset):
         self.model = model
         self.dataset = dataset
         self.config = config
-        # loss: (b, 1) (b, 1) -> num
+        # loss: (b, 2) (b) -> num
         self.loss = nn.CrossEntropyLoss(reduction="none")
+        if config.loss != 'CrossEntropy':
+            # if config.loss == 'Accuracy':
+            #     self.loss = accuracy_loss
+            assert False
         self.save_path = './saved_dict/' + self.config.model_name + '.ckpt'
 
     def train(self):
@@ -96,5 +107,6 @@ class Trainer:
         for true, predict in zip(trues, predicts):
             assert len(true) == len(predict) == self.config.batch_size
             for i in range(len(true)):
-                tot += predict[i][true[i]]
+                if predict[i][true[i]] > predict[i][1 - true[i]]:
+                    tot += 1
         return tot / length

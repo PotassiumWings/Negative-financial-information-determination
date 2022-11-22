@@ -29,5 +29,6 @@ class BasicModel(nn.Module):
         # print(hidden.shape)  # 8, 512, 768
         max_hs = max_pooling_with_mask(hidden, mask)
         hs = self.dropout(max_hs)
-        out = F.softmax(self.fc(hs), dim=1)
+        out = self.fc(hs)
+        # out = F.softmax(out, dim=1)
         return out
