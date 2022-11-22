@@ -30,7 +30,7 @@ class TrainingArguments(BaseModel):
 
     seed: int = Field(0)
 
-    loss: str = Field("CrossEntropy")
+    loss: str = Field("BCELoss")
 
 
 # Create Parser and Parse Args

@@ -35,7 +35,8 @@ class Trainer:
                 # outputs: [8]
                 outputs = self.model(texts)
                 self.model.zero_grad()
-                loss = torch.sum(self.loss(outputs, labels))  # TODO: check this loss
+
+                loss = self.loss(outputs, labels)
                 loss.backward()
                 optimizer.step()
                 logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, loss: {loss.item()}")

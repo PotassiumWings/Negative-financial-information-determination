@@ -89,7 +89,7 @@ class DatasetIterator(object):
 
     def _to_tensor(self, datas):
         x = torch.LongTensor([_[0] for _ in datas]).to(self.device)
-        y = torch.LongTensor([_[1] for _ in datas]).to(self.device)
+        y = torch.FloatTensor([_[1] for _ in datas]).to(self.device)
 
         seq_len = torch.LongTensor([_[2] for _ in datas]).to(self.device)
         mask = torch.LongTensor([_[3] for _ in datas]).to(self.device)
