@@ -8,7 +8,7 @@ from configs.arguments import TrainingArguments
 
 def max_pooling_with_mask(content: torch.LongTensor, mask: torch.LongTensor):
     # return: (b, hidden_size)
-    mask = (1 - mask) * 1e6  # TODO
+    mask = (1 - mask) * 1e4  # TODO
     mask = mask.unsqueeze(-1).expand_as(content)
     result = content - mask
     return torch.max(result, axis=1)[0]
@@ -19,7 +19,7 @@ class BasicModel(nn.Module):
         super(BasicModel, self).__init__()
         self.bert = BertModel.from_pretrained(config.model_name)
         self.dropout = nn.Dropout(p=config.hidden_dropout_prob, inplace=False)
-        self.fc = nn.Linear(config.hidden_size, 2)
+        self.fc = nn.Linear(config.hidden_size, 1)
 
     def forward(self, x):
         # 3, b
@@ -29,7 +29,8 @@ class BasicModel(nn.Module):
         # print(hidden.shape)  # 8, 512, 768
         max_hs = max_pooling_with_mask(hidden, mask)
         hs = self.dropout(max_hs)
-        out = self.fc(hs)
+        out = self.fc(hs).squeeze()
         # out = F.softmax(out, dim=1)
-        out = F.tanh(out)
+        # out = F.tanh(out)
+        out = F.sigmoid(out)
         return out

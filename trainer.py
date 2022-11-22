@@ -7,25 +7,14 @@ from torch.optim import Adam
 from configs.arguments import TrainingArguments
 
 
-# def accuracy_loss(outputs, labels):
-#     # outputs: [b, 2]
-#     # labels: [b]
-#     result = 0
-#     return torch.Tensor([0])
-
-
 class Trainer:
     def __init__(self, config: TrainingArguments, model: nn.Module, dataset, time: str):
         self.model = model
         self.dataset = dataset
         self.config = config
         self.time = time
-        # loss: (b, 2) (b) -> num
-        self.loss = nn.CrossEntropyLoss(reduction="none")
-        if config.loss != 'CrossEntropy':
-            # if config.loss == 'Accuracy':
-            #     self.loss = accuracy_loss
-            assert False
+        # loss: (b) (b) -> num
+        self.loss = nn.BCELoss()
         self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
     def train(self):
@@ -43,7 +32,7 @@ class Trainer:
             # texts: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
             # labels: tensor[8]
             for i, (texts, labels) in enumerate(train_iter):
-                # outputs: [8, 2]
+                # outputs: [8]
                 outputs = self.model(texts)
                 self.model.zero_grad()
                 loss = torch.sum(self.loss(outputs, labels))  # TODO: check this loss
@@ -81,7 +70,7 @@ class Trainer:
             for i, (texts, labels) in enumerate(val_iter):
                 outputs = self.model(texts)
                 loss = self.loss(outputs, labels)
-                total_loss += torch.sum(loss).item()
+                total_loss += loss.item()
 
                 trues.append(labels.cpu())
                 predicts.append(outputs.cpu())
@@ -108,6 +97,6 @@ class Trainer:
         for true, predict in zip(trues, predicts):
             assert len(true) == len(predict) == self.config.batch_size
             for i in range(len(true)):
-                if predict[i][true[i]] > predict[i][1 - true[i]]:
+                if true[i] and predict[i] > 0.5 or not true[i] and predict[i] < 0.5:
                     tot += 1
         return tot / length
