@@ -39,7 +39,8 @@ class Trainer:
                 loss = self.loss(outputs, labels)
                 loss.backward()
                 optimizer.step()
-                logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, loss: {loss.item()}")
+                logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, "
+                             f"loss: {round(loss.item(), 4)}")
 
                 trues.append(labels.cpu())
                 predicts.append(outputs.cpu())
@@ -49,8 +50,9 @@ class Trainer:
                     train_acc = self.calc_train_acc(trues, predicts)
                     val_acc, val_loss = self.eval(val_iter)
                     logging.info(f"Ep {epoch}/{self.config.num_epoches}, iter {current_batch},"
-                                 f" train loss {loss.item()}, train acc {train_acc},"
-                                 f" val loss {val_loss}, val acc {val_acc}, last upd {last_improve}")
+                                 f" train loss {round(loss.item(), 4)}, train acc {round(train_acc, 4)},"
+                                 f" val loss {round(val_loss, 4)}, val acc {round(val_acc, 4)},"
+                                 f" last upd {last_improve}")
                     if val_loss < best_val_loss:
                         best_val_loss = val_loss
                         torch.save(self.model.state_dict(), self.save_path)
