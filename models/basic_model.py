@@ -17,9 +17,15 @@ def max_pooling_with_mask(content: torch.LongTensor, mask: torch.LongTensor):
 class BasicModel(nn.Module):
     def __init__(self, config: TrainingArguments):
         super(BasicModel, self).__init__()
+        self.config = config
+
+        self.out_dim = 1
+        if config.loss == "CrossEntropyLoss":
+            self.out_dim = 2
+
         self.bert = BertModel.from_pretrained(config.model_name)
         self.dropout = nn.Dropout(p=config.hidden_dropout_prob, inplace=False)
-        self.fc = nn.Linear(config.hidden_size, 1)
+        self.fc = nn.Linear(config.hidden_size, self.out_dim)
 
     def forward(self, x):
         # 3, b
@@ -29,8 +35,8 @@ class BasicModel(nn.Module):
         # print(hidden.shape)  # 8, 512, 768
         max_hs = max_pooling_with_mask(hidden, mask)
         hs = self.dropout(max_hs)
-        out = self.fc(hs).squeeze()
-        # out = F.softmax(out, dim=1)
-        # out = F.tanh(out)
-        # out = F.sigmoid(out)
+
+        out = self.fc(hs).squeeze()  # squeeze only if loss is BCE/BCEWithLogits
+        if self.config.loss == "BCELoss":
+            out = F.sigmoid(out)
         return out

@@ -5,6 +5,7 @@ from torch import nn
 from torch.optim import Adam
 
 from configs.arguments import TrainingArguments
+from models.loss import Loss
 
 
 class Trainer:
@@ -13,8 +14,7 @@ class Trainer:
         self.dataset = dataset
         self.config = config
         self.time = time
-        # loss: (b) (b) -> num
-        self.loss = nn.BCEWithLogitsLoss()
+        self.loss = Loss(config).get_loss()
         self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
     def train(self):
@@ -30,9 +30,9 @@ class Trainer:
             train_iter.shuffle()
             trues, predicts = [], []
             # texts: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
-            # labels: tensor[8]
+            # labels: tensor[8], 0/1 y
             for i, (texts, labels) in enumerate(train_iter):
-                # outputs: [8]
+                # outputs: [8]  or [8, 2] if cross entropy
                 outputs = self.model(texts)
                 self.model.zero_grad()
 
@@ -74,7 +74,7 @@ class Trainer:
                 predicts.append(outputs.cpu())
 
         val_acc = self.calc_train_acc(trues, predicts)
-        val_loss = self.loss(torch.cat(trues), torch.cat(predicts))
+        val_loss = self.loss(torch.cat(predicts), torch.cat(trues))
         return val_acc, val_loss
 
     def test(self):
@@ -93,9 +93,19 @@ class Trainer:
     def calc_train_acc(self, trues, predicts):
         length = len(trues) * self.config.batch_size
         tot = 0
+
+        # gap: < gap -> 0, > gap -> 1
+        gap = 0
+        if self.config.loss == "BCELoss":
+            gap = 0.5
+
         for true, predict in zip(trues, predicts):
             assert len(true) == len(predict) == self.config.batch_size
             for i in range(len(true)):
-                if true[i] and predict[i] > 0 or not true[i] and predict[i] < 0:
-                    tot += 1
+                if self.config.loss == "CrossEntropyLoss":
+                    if predict[i][true[i]] > 0.5:
+                        tot += 1
+                else:
+                    if true[i] == 1 and predict[i] > gap or true[i] == 0 and predict[i] < gap:
+                        tot += 1
         return tot / length
