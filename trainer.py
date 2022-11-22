@@ -64,20 +64,20 @@ class Trainer:
 
     def eval(self, val_iter):
         self.model.eval()
-        total_loss = 0
+        # total_loss = 0
         trues, predicts = [], []
         logging.info("Evaluating...")
         with torch.no_grad():
             for i, (texts, labels) in enumerate(val_iter):
                 outputs = self.model(texts)
-                loss = self.loss(outputs, labels)
-                total_loss += loss.item()
-
+                # loss = self.loss(outputs, labels)
+                # total_loss += loss.item()
                 trues.append(labels.cpu())
                 predicts.append(outputs.cpu())
 
         val_acc = self.calc_train_acc(trues, predicts)
-        return val_acc, total_loss
+        val_loss = self.loss(torch.concat(trues), torch.concat(predicts))
+        return val_acc, val_loss
 
     def test(self):
         self.model.load_state_dict(torch.load(self.save_path))
