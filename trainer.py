@@ -1,18 +1,18 @@
 from torch import nn
 from torch.optim import Adam
-from configs.basic_config_bert import BasicConfig
 import torch
 import logging
-import torch.nn.functional as F
+from configs.arguments import TrainingArguments
 
 
 class Trainer:
-    def __init__(self, config: BasicConfig, model: nn.Module, dataset):
+    def __init__(self, config: TrainingArguments, model: nn.Module, dataset):
         self.model = model
         self.dataset = dataset
         self.config = config
         # loss: (b, 1) (b, 1) -> num
         self.loss = nn.CrossEntropyLoss(reduction="none")
+        self.save_path = './saved_dict/' + self.config.model_name + '.ckpt'
 
     def train(self):
         train_iter, val_iter = self.dataset.train_iter, self.dataset.val_iter
@@ -49,7 +49,7 @@ class Trainer:
                                 f" val loss {val_loss}, val acc {val_acc}, last upd {last_improve}")
                     if val_loss < best_val_loss:
                         best_val_loss = val_loss
-                        torch.save(self.model.state_dict(), self.config.save_path)
+                        torch.save(self.model.state_dict(), self.save_path)
                         last_improve = current_batch
                         logging.info("Good, saving model.")
                     self.model.train()
@@ -65,7 +65,7 @@ class Trainer:
         logging.info("Evaluating...")
         with torch.no_grad():
             for i, (texts, labels) in enumerate(val_iter):
-                logging.info(f"Iter {i}/{len(val_iter)}...")
+                # logging.info(f"Iter {i}/{len(val_iter)}...")
                 outputs = self.model(texts)
                 loss = self.loss(outputs, labels)
                 total_loss += torch.sum(loss).item()
@@ -77,7 +77,7 @@ class Trainer:
         return val_acc, total_loss
 
     def test(self):
-        self.model.load_state_dict(torch.load(self.config.save_path))
+        self.model.load_state_dict(torch.load(self.save_path))
         self.model.eval()
         result = {}
         with torch.no_grad():

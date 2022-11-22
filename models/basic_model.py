@@ -1,22 +1,23 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from transformers import AutoModelForMaskedLM
 
-from configs.basic_config_bert import BasicConfig
+from configs.arguments import TrainingArguments
 
 
 def max_pooling_with_mask(content: torch.LongTensor, mask: torch.LongTensor):
     # return: (b, hidden_size)
-    mask = (1 - mask) * 1e6
+    mask = (1 - mask) * 1e6  # TODO
     mask = mask.unsqueeze(-1).expand_as(content)
     result = content - mask
     return torch.max(result, axis=1)[0]
 
 
 class BasicModel(nn.Module):
-    def __init__(self, config: BasicConfig):
+    def __init__(self, config: TrainingArguments):
         super(BasicModel, self).__init__()
-        self.bert = config.model
+        self.bert = AutoModelForMaskedLM.from_pretrained(config.model_name)
         self.dropout = nn.Dropout(p=config.hidden_dropout_prob, inplace=False)
         self.fc = nn.Linear(config.hidden_size, 2)
 

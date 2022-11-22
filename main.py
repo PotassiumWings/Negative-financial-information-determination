@@ -1,12 +1,13 @@
 from models.basic_model import BasicModel
-from configs.basic_config_bert import BasicConfig
+from configs.arguments import TrainingArguments
 from dataset.processor import Dataset
 from trainer import Trainer
 from datetime import datetime
+import torch
 import logging
 
 
-if __name__ == '__main__':
+def main(config: TrainingArguments):
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s   %(levelname)s   %(message)s')
     logger = logging.getLogger()
@@ -18,8 +19,8 @@ if __name__ == '__main__':
     logger.addHandler(file_handler)
 
     logging.info("Loading model...")
-    config = BasicConfig()
-    model = BasicModel(config).to(config.device)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = BasicModel(config).to(device)
     logging.info("Loading dataset...")
     dataset = Dataset(config)
     trainer = Trainer(config, model, dataset)
