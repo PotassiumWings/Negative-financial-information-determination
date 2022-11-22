@@ -1,10 +1,12 @@
-from models.basic_model import BasicModel
+import logging
+from datetime import datetime
+
+import torch
+
 from configs.arguments import TrainingArguments
 from dataset.processor import Dataset
+from models.basic_model import BasicModel
 from trainer import Trainer
-from datetime import datetime
-import torch
-import logging
 
 
 def main(config: TrainingArguments):

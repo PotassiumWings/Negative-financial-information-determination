@@ -1,7 +1,9 @@
+import logging
+
+import torch
 from torch import nn
 from torch.optim import Adam
-import torch
-import logging
+
 from configs.arguments import TrainingArguments
 
 
@@ -45,8 +47,8 @@ class Trainer:
                     train_acc = self.calc_train_acc(trues, predicts)
                     val_acc, val_loss = self.eval(val_iter)
                     logging.info(f"Ep {epoch}/{self.config.num_epoches}, iter {current_batch},"
-                                f" train loss {loss.item()}, train acc {train_acc},"
-                                f" val loss {val_loss}, val acc {val_acc}, last upd {last_improve}")
+                                 f" train loss {loss.item()}, train acc {train_acc},"
+                                 f" val loss {val_loss}, val acc {val_acc}, last upd {last_improve}")
                     if val_loss < best_val_loss:
                         best_val_loss = val_loss
                         torch.save(self.model.state_dict(), self.save_path)
@@ -65,7 +67,6 @@ class Trainer:
         logging.info("Evaluating...")
         with torch.no_grad():
             for i, (texts, labels) in enumerate(val_iter):
-                # logging.info(f"Iter {i}/{len(val_iter)}...")
                 outputs = self.model(texts)
                 loss = self.loss(outputs, labels)
                 total_loss += torch.sum(loss).item()

@@ -1,10 +1,12 @@
 import csv
 import random
+
 import torch
 import tqdm
 from numpy import ceil
-from configs.arguments import TrainingArguments
 from transformers import AutoTokenizer
+
+from configs.arguments import TrainingArguments
 
 
 class Dataset:
@@ -46,7 +48,7 @@ class Dataset:
                     # id, text, entities, label, entities_real
                     label = int(row[4])
 
-                # only text TODO: add_special_tokens with small dataset
+                # only text
                 text = row[1]
                 token_ids = self.tokenizer.encode(text, add_special_tokens=self.config.add_special_tokens)
                 seq_len = len(token_ids)
@@ -69,7 +71,7 @@ class Dataset:
         contents = self.train_data
         train_contents = contents[:int(self.config.train_percent * len(contents))]
         valid_contents = contents[int(self.config.train_percent * len(contents)):]
-        return DatasetIterator(train_contents, self.config.batch_size, self.device),\
+        return DatasetIterator(train_contents, self.config.batch_size, self.device), \
                DatasetIterator(valid_contents, self.config.batch_size, self.device)
 
 
