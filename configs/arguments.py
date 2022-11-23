@@ -14,7 +14,7 @@ class TrainingArguments(BaseModel):
     # train : all
     train_percent: float = Field(0.8)
 
-    learning_rate: float = Field(5e-5)
+    learning_rate: float = Field(2e-5)
     num_epoches: int = Field(10)
     show_period: int = Field(30)
 
@@ -22,7 +22,7 @@ class TrainingArguments(BaseModel):
     hidden_size: int = Field(768)
 
     # more than ? batch no improve, stop
-    early_stop_diff: int = Field(500)
+    early_stop_diff: int = Field(1000)
 
     add_special_tokens: bool = Field(False)
 
