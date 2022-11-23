@@ -16,6 +16,7 @@ class Trainer:
         self.time = time
         self.loss_config = Loss(config)
         self.loss = self.loss_config.get_loss()
+        self.best_val_loss = -1
         self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
     def train(self):
@@ -23,7 +24,7 @@ class Trainer:
         # set state
         self.model.train()
         optimizer = Adam(self.model.parameters(), lr=self.config.learning_rate)
-        best_val_loss = float('inf')
+        self.best_val_loss = float('inf')
         last_improve = 0  # last time to update best_val_loss
         current_batch = 1
 
@@ -55,8 +56,8 @@ class Trainer:
                                  f" train loss {round(loss.item(), 4)}, train acc {round(train_acc, 4)},"
                                  f" val loss {round(val_loss, 4)}, val acc {round(val_acc, 4)},"
                                  f" last upd {last_improve}")
-                    if val_loss < best_val_loss:
-                        best_val_loss = val_loss
+                    if val_loss < self.best_val_loss:
+                        self.best_val_loss = val_loss
                         torch.save(self.model.state_dict(), self.save_path)
                         last_improve = current_batch
                         logging.info("Good, saving model.")
@@ -97,7 +98,7 @@ class Trainer:
                     if predict < self.loss_config.gap:
                         continue
                     result.add(sub_label)
-                logging.info(f"Testing epoch {i}/{len(self.dataset.test_iter)}...")
+                # logging.info(f"Testing epoch {i}/{len(self.dataset.test_iter)}...")
         logging.info(f"Calculation done.")
         return result
 

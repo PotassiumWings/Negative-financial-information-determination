@@ -8,7 +8,7 @@ from configs.arguments import TrainingArguments
 
 def max_pooling_with_mask(content: torch.LongTensor, mask: torch.LongTensor):
     # return: (b, hidden_size)
-    mask = (1 - mask) * 1e4  # TODO
+    mask = (1 - mask) * 1e4
     mask = mask.unsqueeze(-1).expand_as(content)
     result = content - mask
     return torch.max(result, axis=1)[0]
