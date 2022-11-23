@@ -84,21 +84,21 @@ class Trainer:
     def test(self, filename):
         if filename == "":
             filename = self.save_path
+        logging.info(f"Loading model from disk {filename}...")
         self.model.load_state_dict(torch.load(filename))
         self.model.eval()
-        result = {}
+        result = set()
         with torch.no_grad():
             for i, (text, entity, label) in enumerate(self.dataset.test_iter):
                 outputs = self.model(text, entity)
                 label = label.cpu().numpy()
                 predicts = outputs.cpu().numpy()
                 for sub_label, predict in zip(label, predicts):
-                    result_id, entity_name = sub_label.split(";")
-                    if sub_label not in result:
-                        result[result_id] = []
                     if predict < self.loss_config.gap:
                         continue
-                    result[result_id].append(entity_name)
+                    result.add(sub_label)
+                logging.info(f"Testing epoch {i}/{len(self.dataset.test_iter)}...")
+        logging.info(f"Calculation done.")
         return result
 
     def calc_train_acc(self, trues, predicts):

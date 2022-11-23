@@ -43,9 +43,11 @@ def main(config: TrainingArguments):
     trainer = Trainer(config, model, dataset, time)
 
     logging.info("Start Training.")
-    # trainer.train()
+
+    if config.model_filename == "":
+        trainer.train()
     result = trainer.test(config.model_filename)
-    generate_submission(result, time)
+    generate_submission(result, dataset, time)
 
 
 def setup_seed(seed):
@@ -56,14 +58,24 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 
-def generate_submission(result, time):
+def generate_submission(result, dataset, time):
     import csv
     with open(f"submission_{time}.csv", "w") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow(["id", "negative", "key_entity"])
-        for row_id in result:
+        final_result = [[] for i in range(len(dataset.test_labels))]
+        for row_index in result:
+            row_label = dataset.index_to_label[row_index]
+            row_index, entity = row_label.split(";")  # 0 小资钱包
+            final_result[int(row_index)].append(entity)
+
+        for row_index in range(len(final_result)):
+            row_id = dataset.test_labels[row_index]  # 67bbbed4
+
             negative = 0
-            if len(result[row_id]) > 0:
+            if len(final_result[row_index]) > 0:
                 negative = 1
-            key_entity = ";".join(result[row_id])
+
+            key_entity = ";".join(final_result[row_index])
+
             writer.writerow([row_id, negative, key_entity])

@@ -22,9 +22,16 @@ class Dataset:
         train_file_path = config.train_file
         test_file_path = config.test_file
         self.max_seq_len = config.max_seq_len
-        self.train_data = self._load_data(train_file_path, is_test=False)
+
+        # test
+        self.test_labels = []  # row[0]
+        self.max_index = 0  # 2;小资钱包 <-> 5
+        self.label_to_index, self.index_to_label = {}, {}
+
+        if self.config.model_filename == "":
+            self.train_data = self._load_data(train_file_path, is_test=False)
+            self.train_iter, self.val_iter = self._get_train_val_data_iter()
         self.test_data = self._load_data(test_file_path, is_test=True)
-        self.train_iter, self.val_iter = self._get_train_val_data_iter()
         self.test_iter = self._get_test_data_iter()
 
     def _load_data(self, filepath, is_test=False):
@@ -41,7 +48,9 @@ class Dataset:
                     continue
 
                 entities = row[3].split(";")
-                if not is_test:
+                if is_test:
+                    self.test_labels.append(row[0])
+                else:
                     key_entities = row[5].split(";")
 
                 for i in range(len(entities)):
@@ -56,7 +65,12 @@ class Dataset:
                     entity_token_ids, entity_seq_len, entity_mask = self._get_token_ids(entity)
                     if is_test:
                         # id, title, text, entity
-                        label = row[0] + ";" + entity
+                        label = f"{len(self.test_labels) - 1};{entity}"
+                        if label not in self.label_to_index:
+                            self.label_to_index[label] = self.max_index
+                            self.index_to_label[self.max_index] = label
+                            self.max_index += 1
+                        label = self.label_to_index[label]
                     else:
                         # id, title, text, entity, negative, key_entity
                         label = reduce(lambda x, y: x or y == entity, key_entities, False)
