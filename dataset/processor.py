@@ -56,7 +56,7 @@ class Dataset:
                     entity_token_ids, entity_seq_len, entity_mask = self._get_token_ids(entity)
                     if is_test:
                         # id, title, text, entity
-                        label = row[0]
+                        label = row[0] + ";" + entity
                     else:
                         # id, title, text, entity, negative, key_entity
                         label = reduce(lambda x, y: x or y == entity, key_entities, False)

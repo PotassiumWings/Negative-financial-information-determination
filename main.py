@@ -43,9 +43,9 @@ def main(config: TrainingArguments):
     trainer = Trainer(config, model, dataset, time)
 
     logging.info("Start Training.")
-    trainer.train()
-    # result = trainer.test()
-    # generate_submission(result)
+    # trainer.train()
+    result = trainer.test(config.model_filename)
+    generate_submission(result, time)
 
 
 def setup_seed(seed):
@@ -56,5 +56,14 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 
-def generate_submission(result):
-    return
+def generate_submission(result, time):
+    import csv
+    with open(f"submission_{time}.csv", "w") as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+        writer.writerow(["id", "negative", "key_entity"])
+        for row_id in result:
+            negative = 0
+            if len(result[row_id]) > 0:
+                negative = 1
+            key_entity = ";".join(result[row_id])
+            writer.writerow([row_id, negative, key_entity])

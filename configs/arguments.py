@@ -31,6 +31,8 @@ class TrainingArguments(BaseModel):
     loss: str = Field("BCEWithLogitsLoss")
     label_smoothing: float = Field(0.001)
 
+    model_filename: str = Field("")
+
 
 # Create Parser and Parse Args
 parser = pydantic_argparse.ArgumentParser(

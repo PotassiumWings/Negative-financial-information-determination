@@ -81,8 +81,10 @@ class Trainer:
         val_loss = self.loss(torch.cat(predicts), torch.cat(trues)).item()
         return val_acc, val_loss
 
-    def test(self):
-        self.model.load_state_dict(torch.load(self.save_path))
+    def test(self, filename):
+        if filename == "":
+            filename = self.save_path
+        self.model.load_state_dict(torch.load(filename))
         self.model.eval()
         result = {}
         with torch.no_grad():
@@ -90,12 +92,13 @@ class Trainer:
                 outputs = self.model(text, entity)
                 label = label.cpu().numpy()
                 predicts = outputs.cpu().numpy()
-                for sub_label, sub_entity, predict in zip(label, entity, predicts):
+                for sub_label, predict in zip(label, predicts):
+                    result_id, entity_name = sub_label.split(";")
                     if sub_label not in result:
-                        result[sub_label] = []
+                        result[result_id] = []
                     if predict < self.loss_config.gap:
                         continue
-                    result[sub_label].append(entity)
+                    result[result_id].append(entity_name)
         return result
 
     def calc_train_acc(self, trues, predicts):
