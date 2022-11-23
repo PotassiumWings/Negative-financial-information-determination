@@ -1,13 +1,17 @@
 from configs.arguments import TrainingArguments
 import torch.nn as nn
+import torch
 
 
 class Loss:
     def __init__(self, config: TrainingArguments):
         self.config = config
         self.label_smoothing = config.label_smoothing
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.gap = 0
-        if self.config.loss == "BCELoss":
+        if self.config.prompt:
+            self.loss = self.prompt_loss
+        elif self.config.loss == "BCELoss":
             self.gap = 0.5
             self.loss = self.bce_loss
         elif self.config.loss == "BCEWithLogitsLoss":
@@ -28,3 +32,14 @@ class Loss:
 
     def ce_loss(self, output, labels):
         return nn.CrossEntropyLoss()(output, labels)
+
+    def prompt_loss(self, output, labels):
+        # output: positive b * 1, negative b * 1
+        negative, positive = output
+        loss_positive = positive[torch.where(labels == 1)]
+        loss_negative = negative[torch.where(labels == 0)]
+        # [b, 2]
+        loss_all = torch.cat([loss_positive, loss_negative])
+
+        all_zero = torch.zeros(loss_all.shape).to(self.device)
+        return -nn.BCELoss()(loss_all / 100, all_zero).to(self.device)  # TODO: what range does the output have?

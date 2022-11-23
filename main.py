@@ -9,6 +9,7 @@ import torch
 from configs.arguments import TrainingArguments
 from dataset.processor import Dataset
 from models.basic_model import BasicModel
+from models.prompt_model import PromptModel
 from trainer import Trainer
 
 
@@ -36,7 +37,10 @@ def main(config: TrainingArguments):
 
     logging.info("Loading model...")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = BasicModel(config).to(device)
+    if config.prompt:
+        model = PromptModel(config).to(device)
+    else:
+        model = BasicModel(config).to(device)
 
     logging.info("Loading dataset...")
     dataset = Dataset(config)

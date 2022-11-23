@@ -45,8 +45,8 @@ class Trainer:
                 logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, "
                              f"loss: {round(loss.item(), 4)}")
 
-                trues.append(label.cpu())
-                predicts.append(outputs.cpu())
+                trues.append(label)
+                predicts.append(outputs)
 
                 if current_batch % self.config.show_period == 0:
                     # output accuracy
@@ -75,11 +75,11 @@ class Trainer:
         with torch.no_grad():
             for i, (text, entity, label) in enumerate(val_iter):
                 outputs = self.model(text, entity)
-                trues.append(label.cpu())
-                predicts.append(outputs.cpu())
+                trues.append(label)
+                predicts.append(outputs)
 
-        val_acc = self.calc_train_acc(trues, predicts)
-        val_loss = self.loss(torch.cat(predicts), torch.cat(trues)).item()
+            val_acc = self.calc_train_acc(trues, predicts)
+            val_loss = self.loss(torch.cat(predicts), torch.cat(trues)).item()
         return val_acc, val_loss
 
     def test(self, filename):
@@ -93,11 +93,20 @@ class Trainer:
             for i, (text, entity, label) in enumerate(self.dataset.test_iter):
                 outputs = self.model(text, entity)
                 label = label.cpu().numpy()
-                predicts = outputs.cpu().numpy()
-                for sub_label, predict in zip(label, predicts):
-                    if predict < self.loss_config.gap:
-                        continue
-                    result.add(sub_label)
+
+                if self.config.prompt:
+                    # 8, 2  8, 2
+                    neg, pos = outputs
+                    neg, pos = neg.cpu(), pos.cpu()
+                    for sub_label, sub_neg, sub_pos in zip(label, neg, pos):
+                        if torch.sum(sub_neg) < torch.sum(sub_pos):
+                            result.add(sub_label)
+                else:
+                    predicts = outputs.cpu().numpy()
+                    for sub_label, predict in zip(label, predicts):
+                        if predict < self.loss_config.gap:
+                            continue
+                        result.add(sub_label)
                 # logging.info(f"Testing epoch {i}/{len(self.dataset.test_iter)}...")
         logging.info(f"Calculation done.")
         return result
@@ -108,12 +117,19 @@ class Trainer:
 
         for true, predict in zip(trues, predicts):
             assert len(true) == len(predict) == self.config.batch_size
-            for i in range(len(true)):
-                if self.config.loss == "CrossEntropyLoss":
-                    if predict[i][true[i]] > 0.5:
+            if self.config.prompt:
+                true = true.cpu()
+                for i in range(len(true)):
+                    if torch.sum(predict[i].cpu()[1 - true[i]]) < torch.sum(predict[i].cpu()[true[i]]):
                         tot += 1
-                else:
-                    if true[i] == 1 and predict[i] > self.loss_config.gap or \
-                            true[i] == 0 and predict[i] < self.loss_config.gap:
-                        tot += 1
+            else:
+                true, predict = true.cpu(), predict.cpu()
+                for i in range(len(true)):
+                    if self.config.loss == "CrossEntropyLoss":
+                        if predict[i][true[i]] > 0.5:
+                            tot += 1
+                    else:
+                        if true[i] == 1 and predict[i] > self.loss_config.gap or \
+                                true[i] == 0 and predict[i] < self.loss_config.gap:
+                            tot += 1
         return tot / length

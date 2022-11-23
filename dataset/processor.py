@@ -44,7 +44,8 @@ class Dataset:
                     if is_test:
                         assert row[2] == 'text' and row[3] == 'entity'
                     else:
-                        assert row[2] == 'text' and row[3] == 'entity' and row[4] == 'negative' and row[5] == 'key_entity'
+                        assert row[2] == 'text' and row[3] == 'entity' \
+                               and row[4] == 'negative' and row[5] == 'key_entity'
                     continue
 
                 entities = row[3].split(";")
@@ -61,9 +62,13 @@ class Dataset:
                         filter(lambda x: x not in entity and entity not in x, entities),
                         row[2]
                     )
-                    text = text + "上文主要评论的是" + entity
-                    text_token_ids, text_seq_len, text_mask = self._get_token_ids(text)
-                    entity_token_ids, entity_seq_len, entity_mask = self._get_token_ids(entity)
+                    if self.config.prompt:
+                        text = text + "总之，" + entity + "[MASK]"
+                    else:
+                        text = text + "上文主要评论的是" + entity
+
+                    text_token_ids, text_seq_len, text_mask, prompt_pos = self._get_token_ids(text)
+                    entity_token_ids, entity_seq_len, entity_mask, _ = self._get_token_ids(entity)
                     if is_test:
                         # id, title, text, entity
                         label = f"{len(self.test_labels) - 1};{entity}"
@@ -77,7 +82,7 @@ class Dataset:
                         label = reduce(lambda x, y: x or y == entity, key_entities, False)
 
                     # temporarily separate text and entity  TODO
-                    contents.append((text_token_ids, text_seq_len, text_mask,
+                    contents.append((text_token_ids, text_seq_len, text_mask, prompt_pos,
                                      entity_token_ids, entity_seq_len, entity_mask, label))
         return contents
 
@@ -87,12 +92,14 @@ class Dataset:
         if seq_len < self.max_seq_len:
             mask = [1] * len(token_ids) + [0] * (self.max_seq_len - seq_len)
             token_ids += [self.tokenizer.pad_token_id] * (self.max_seq_len - seq_len)
+            prompt_pos = seq_len - 1
         else:
             mask = [1] * self.max_seq_len
             # token_ids = token_ids[:self.max_seq_len]
             token_ids = token_ids[:self.f_max_seq_len] + token_ids[seq_len - self.t_max_seq_len:]
             seq_len = self.max_seq_len
-        return token_ids, seq_len, mask
+            prompt_pos = self.max_seq_len - 1
+        return token_ids, seq_len, mask, prompt_pos
 
     def _get_test_data_iter(self):
         contents = self.test_data
@@ -122,13 +129,14 @@ class DatasetIterator(object):
         text_x = torch.LongTensor([_[0] for _ in datas]).to(self.device)
         text_seq_len = torch.LongTensor([_[1] for _ in datas]).to(self.device)
         text_mask = torch.LongTensor([_[2] for _ in datas]).to(self.device)
+        prompt_pos = torch.LongTensor([_[3] for _ in datas]).to(self.device)
 
-        entity_x = torch.LongTensor([_[3] for _ in datas]).to(self.device)
-        entity_seq_len = torch.LongTensor([_[4] for _ in datas]).to(self.device)
-        entity_mask = torch.LongTensor([_[5] for _ in datas]).to(self.device)
+        entity_x = torch.LongTensor([_[4] for _ in datas]).to(self.device)
+        entity_seq_len = torch.LongTensor([_[5] for _ in datas]).to(self.device)
+        entity_mask = torch.LongTensor([_[6] for _ in datas]).to(self.device)
 
-        y = torch.LongTensor([_[6] for _ in datas]).to(self.device)
-        return (text_x, text_seq_len, text_mask), (entity_x, entity_seq_len, entity_mask), y
+        y = torch.LongTensor([_[7] for _ in datas]).to(self.device)
+        return (text_x, text_seq_len, text_mask, prompt_pos), (entity_x, entity_seq_len, entity_mask), y
 
     def __next__(self):
         if self.index >= self.n_batches:
