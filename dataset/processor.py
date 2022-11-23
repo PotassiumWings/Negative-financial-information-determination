@@ -61,6 +61,7 @@ class Dataset:
                         filter(lambda x: x not in entity and entity not in x, entities),
                         row[2]
                     )
+                    text = text + "上文主要评论的是" + entity
                     text_token_ids, text_seq_len, text_mask = self._get_token_ids(text)
                     entity_token_ids, entity_seq_len, entity_mask = self._get_token_ids(entity)
                     if is_test:
