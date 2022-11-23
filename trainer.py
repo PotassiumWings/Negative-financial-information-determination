@@ -14,7 +14,8 @@ class Trainer:
         self.dataset = dataset
         self.config = config
         self.time = time
-        self.loss = Loss(config).get_loss()
+        self.loss_config = Loss(config)
+        self.loss = self.loss_config.get_loss()
         self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
     def train(self):
@@ -29,20 +30,21 @@ class Trainer:
         for epoch in range(self.config.num_epoches):
             train_iter.shuffle()
             trues, predicts = [], []
-            # texts: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
-            # labels: tensor[8], 0/1 y
-            for i, (texts, labels) in enumerate(train_iter):
+            # text: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
+            # entity: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
+            # label: tensor[8], 0/1 y
+            for i, (text, entity, label) in enumerate(train_iter):
                 # outputs: [8]  or [8, 2] if cross entropy
-                outputs = self.model(texts)
+                outputs = self.model(text, entity)
                 self.model.zero_grad()
 
-                loss = self.loss(outputs, labels)
+                loss = self.loss(outputs, label)
                 loss.backward()
                 optimizer.step()
                 logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, "
                              f"loss: {round(loss.item(), 4)}")
 
-                trues.append(labels.cpu())
+                trues.append(label.cpu())
                 predicts.append(outputs.cpu())
 
                 if current_batch % self.config.show_period == 0:
@@ -70,9 +72,9 @@ class Trainer:
         trues, predicts = [], []
         logging.info("Evaluating...")
         with torch.no_grad():
-            for i, (texts, labels) in enumerate(val_iter):
-                outputs = self.model(texts)
-                trues.append(labels.cpu())
+            for i, (text, entity, label) in enumerate(val_iter):
+                outputs = self.model(text, entity)
+                trues.append(label.cpu())
                 predicts.append(outputs.cpu())
 
         val_acc = self.calc_train_acc(trues, predicts)
@@ -84,22 +86,21 @@ class Trainer:
         self.model.eval()
         result = {}
         with torch.no_grad():
-            for i, (texts, labels) in enumerate(self.dataset.test_iter):
-                outputs = self.model(texts)
-                labels = labels.cpu().numpy()
+            for i, (text, entity, label) in enumerate(self.dataset.test_iter):
+                outputs = self.model(text, entity)
+                label = label.cpu().numpy()
                 predicts = outputs.cpu().numpy()
-                for label, predict in zip(labels, predicts):
-                    result[label] = predict
+                for sub_label, sub_entity, predict in zip(label, entity, predicts):
+                    if sub_label not in result:
+                        result[sub_label] = []
+                    if predict < self.loss_config.gap:
+                        continue
+                    result[sub_label].append(entity)
         return result
 
     def calc_train_acc(self, trues, predicts):
         length = len(trues) * self.config.batch_size
         tot = 0
-
-        # gap: < gap -> 0, > gap -> 1
-        gap = 0
-        if self.config.loss == "BCELoss":
-            gap = 0.5
 
         for true, predict in zip(trues, predicts):
             assert len(true) == len(predict) == self.config.batch_size
@@ -108,6 +109,7 @@ class Trainer:
                     if predict[i][true[i]] > 0.5:
                         tot += 1
                 else:
-                    if true[i] == 1 and predict[i] > gap or true[i] == 0 and predict[i] < gap:
+                    if true[i] == 1 and predict[i] > self.loss_config.gap or \
+                            true[i] == 0 and predict[i] < self.loss_config.gap:
                         tot += 1
         return tot / length

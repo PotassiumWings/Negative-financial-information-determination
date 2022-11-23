@@ -4,6 +4,7 @@ import random
 import torch
 import tqdm
 from numpy import ceil
+from functools import reduce
 from transformers import BertTokenizer
 
 from configs.arguments import TrainingArguments
@@ -39,27 +40,44 @@ class Dataset:
                         assert row[2] == 'text' and row[3] == 'entity' and row[4] == 'negative' and row[5] == 'key_entity'
                     continue
 
-                if is_test:
-                    # id, title, text, entity
-                    label = row[0]
-                else:
-                    # id, title, text, entity, negative, key_entity
-                    label = int(row[4])
+                entities = row[3].split(";")
+                if not is_test:
+                    key_entities = row[5].split(";")
 
-                # only text
-                text = row[2]
-                token_ids = self.tokenizer.encode(text, add_special_tokens=self.config.add_special_tokens)
-                seq_len = len(token_ids)
-                if seq_len < self.max_seq_len:
-                    mask = [1] * len(token_ids) + [0] * (self.max_seq_len - seq_len)
-                    token_ids += [self.tokenizer.pad_token_id] * (self.max_seq_len - seq_len)
-                else:
-                    mask = [1] * self.max_seq_len
-                    # token_ids = token_ids[:self.max_seq_len]
-                    token_ids = token_ids[:self.f_max_seq_len] + token_ids[seq_len - self.t_max_seq_len:]
-                    seq_len = self.max_seq_len
-                contents.append((token_ids, label, seq_len, mask))
+                for i in range(len(entities)):
+                    entity = entities[i]
+                    # replace entities that do not contain `entity` and not contained by `entity` to `其他实体`
+                    text = reduce(
+                        lambda x, y: x.replace(y, "其他实体"),
+                        entities.filter(lambda x: x not in entity and entity not in x),
+                        row[2]
+                    )
+                    text_token_ids, text_seq_len, text_mask = self._get_token_ids(text)
+                    entity_token_ids, entity_seq_len, entity_mask = self._get_token_ids(entity)
+                    if is_test:
+                        # id, title, text, entity
+                        label = row[0]
+                    else:
+                        # id, title, text, entity, negative, key_entity
+                        label = reduce(lambda x, y: x or y == entity, key_entities, False)
+
+                    # temporarily separate text and entity  TODO
+                    contents.append((text_token_ids, text_seq_len, text_mask,
+                                     entity_token_ids, entity_seq_len, entity_mask, label))
         return contents
+
+    def _get_token_ids(self, text):
+        token_ids = self.tokenizer.encode(text, add_special_tokens=self.config.add_special_tokens)
+        seq_len = len(token_ids)
+        if seq_len < self.max_seq_len:
+            mask = [1] * len(token_ids) + [0] * (self.max_seq_len - seq_len)
+            token_ids += [self.tokenizer.pad_token_id] * (self.max_seq_len - seq_len)
+        else:
+            mask = [1] * self.max_seq_len
+            # token_ids = token_ids[:self.max_seq_len]
+            token_ids = token_ids[:self.f_max_seq_len] + token_ids[seq_len - self.t_max_seq_len:]
+            seq_len = self.max_seq_len
+        return token_ids, seq_len, mask
 
     def _get_test_data_iter(self):
         contents = self.test_data
@@ -86,12 +104,16 @@ class DatasetIterator(object):
         random.shuffle(self.batches)
 
     def _to_tensor(self, datas):
-        x = torch.LongTensor([_[0] for _ in datas]).to(self.device)
-        y = torch.LongTensor([_[1] for _ in datas]).to(self.device)
+        text_x = torch.LongTensor([_[0] for _ in datas]).to(self.device)
+        text_seq_len = torch.LongTensor([_[1] for _ in datas]).to(self.device)
+        text_mask = torch.LongTensor([_[2] for _ in datas]).to(self.device)
 
-        seq_len = torch.LongTensor([_[2] for _ in datas]).to(self.device)
-        mask = torch.LongTensor([_[3] for _ in datas]).to(self.device)
-        return (x, seq_len, mask), y
+        entity_x = torch.LongTensor([_[3] for _ in datas]).to(self.device)
+        entity_seq_len = torch.LongTensor([_[4] for _ in datas]).to(self.device)
+        entity_mask = torch.LongTensor([_[5] for _ in datas]).to(self.device)
+
+        y = torch.LongTensor([_[6] for _ in datas]).to(self.device)
+        return (text_x, text_seq_len, text_mask), (entity_x, entity_seq_len, entity_mask), y
 
     def __next__(self):
         if self.index >= self.n_batches:

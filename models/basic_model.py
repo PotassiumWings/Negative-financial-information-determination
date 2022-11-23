@@ -25,18 +25,20 @@ class BasicModel(nn.Module):
 
         self.bert = BertModel.from_pretrained(config.model_name)
         self.dropout = nn.Dropout(p=config.hidden_dropout_prob, inplace=False)
-        self.fc = nn.Linear(config.hidden_size, self.out_dim)
+        self.fc = nn.Linear(config.hidden_size * 2, self.out_dim)
 
-    def forward(self, x):
+    def forward(self, x1, x2):
         # 3, b
-        context = x[0]  # b
-        mask = x[2]  # b
-        hidden = self.bert(context, attention_mask=mask)[0]  # b, max_len, hidden_size  TODO
+        context_text, mask_text = x1[0], x1[2]
+        context_entity, mask_entity = x2[0], x2[2]
+        hidden_text = self.bert(context_text, attention_mask=mask_text)[0]  # b, max_len, hidden_size
+        hidden_entity = self.bert(context_entity, attention_mask=mask_entity)[0]  # b, max_len, hidden_size
         # print(hidden.shape)  # 8, 512, 768
-        max_hs = max_pooling_with_mask(hidden, mask)
-        hs = self.dropout(max_hs)
+        # use same dropout  TODO
+        max_hs_text = self.dropout(max_pooling_with_mask(hidden_text, mask_text))
+        max_hs_entity = self.dropout(max_pooling_with_mask(hidden_entity, mask_entity))
 
-        out = self.fc(hs).squeeze()  # squeeze only if loss is BCE/BCEWithLogits
+        out = self.fc(torch.cat(max_hs_text, max_hs_entity)).squeeze()  # squeeze only if loss is BCE/BCEWithLogits
         if self.config.loss == "BCELoss":
             out = F.sigmoid(out)
         return out

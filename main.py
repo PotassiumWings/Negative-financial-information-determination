@@ -45,6 +45,7 @@ def main(config: TrainingArguments):
     logging.info("Start Training.")
     trainer.train()
     # result = trainer.test()
+    # generate_submission(result)
 
 
 def setup_seed(seed):
@@ -53,3 +54,7 @@ def setup_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
+
+
+def generate_submission(result):
+    return
