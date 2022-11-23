@@ -11,14 +11,12 @@ class TrainingArguments(BaseModel):
     max_seq_len: int = Field(512)
     f_max_seq_len: int = Field(129)
 
-    batch_size: int = Field(8)
-
     # train : all
-    train_percent: float = Field(0.9)
+    train_percent: float = Field(0.8)
 
     learning_rate: float = Field(5e-5)
     num_epoches: int = Field(10)
-    show_period: int = Field(10)
+    show_period: int = Field(30)
 
     hidden_dropout_prob: float = Field(0.1)
     hidden_size: int = Field(768)
@@ -29,8 +27,8 @@ class TrainingArguments(BaseModel):
     add_special_tokens: bool = Field(False)
 
     seed: int = Field(0)
-
-    loss: str = Field("BCELoss")
+    batch_size: int = Field(4)
+    loss: str = Field("BCEWithLogitsLoss")
     label_smoothing: float = Field(0.001)
 
 
