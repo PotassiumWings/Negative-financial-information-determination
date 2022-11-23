@@ -34,22 +34,20 @@ class Dataset:
                 # first row
                 if row[0] == 'id':
                     if is_test:
-                        # assert row[1] == 'text' and row[2] == 'entity'
                         assert row[2] == 'text' and row[3] == 'entity'
                     else:
-                        # assert row[1] == 'text' and row[2] == 'entity' and row[3] == 'negative'
-                        assert row[2] == 'text' and row[3] == 'entity' and row[4] == 'negative'
+                        assert row[2] == 'text' and row[3] == 'entity' and row[4] == 'negative' and row[5] == 'key_entity'
                     continue
 
                 if is_test:
-                    # id, text, entities
+                    # id, title, text, entity
                     label = row[0]
                 else:
-                    # id, text, entities, label, entities_real
+                    # id, title, text, entity, negative, key_entity
                     label = int(row[4])
 
                 # only text
-                text = row[1]
+                text = row[2]
                 token_ids = self.tokenizer.encode(text, add_special_tokens=self.config.add_special_tokens)
                 seq_len = len(token_ids)
                 if seq_len < self.max_seq_len:
@@ -58,7 +56,7 @@ class Dataset:
                 else:
                     mask = [1] * self.max_seq_len
                     # token_ids = token_ids[:self.max_seq_len]
-                    token_ids = token_ids[:self.config.f_max_seq_len] + token_ids[seq_len - self.config.t_max_seq_len:]
+                    token_ids = token_ids[:self.f_max_seq_len] + token_ids[seq_len - self.t_max_seq_len:]
                     seq_len = self.max_seq_len
                 contents.append((token_ids, label, seq_len, mask))
         return contents

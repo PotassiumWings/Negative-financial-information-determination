@@ -76,7 +76,7 @@ class Trainer:
                 predicts.append(outputs.cpu())
 
         val_acc = self.calc_train_acc(trues, predicts)
-        val_loss = self.loss(torch.cat(predicts), torch.cat(trues))
+        val_loss = self.loss(torch.cat(predicts), torch.cat(trues)).item()
         return val_acc, val_loss
 
     def test(self):
