@@ -49,7 +49,7 @@ class Dataset:
                     # replace entities that do not contain `entity` and not contained by `entity` to `其他实体`
                     text = reduce(
                         lambda x, y: x.replace(y, "其他实体"),
-                        entities.filter(lambda x: x not in entity and entity not in x),
+                        filter(lambda x: x not in entity and entity not in x, entities),
                         row[2]
                     )
                     text_token_ids, text_seq_len, text_mask = self._get_token_ids(text)

@@ -14,7 +14,8 @@ class Loss:
             self.loss = self.bce_loss_logits
         elif self.config.loss == "CrossEntropyLoss":
             self.loss = self.ce_loss
-        raise NotImplementedError(f"This loss {self.config.loss} is not implemented.")
+        else:
+            raise NotImplementedError(f"This loss {self.config.loss} is not implemented.")
 
     def get_loss(self):
         return self.loss
