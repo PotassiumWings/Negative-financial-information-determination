@@ -34,7 +34,7 @@ class TrainingArguments(BaseModel):
     loss: str = Field("BCEWithLogitsLoss")
     label_smoothing: float = Field(0.001)
 
-    prompt_positive: str = Field("好赞")  # TODO: emotion dict
+    prompt_positive: str = Field("好赞")
     prompt_negative: str = Field("差坏")
     prompt: bool = Field(False)
 

@@ -39,4 +39,4 @@ class Loss:
         negative = torch.sum(negative, dim=1)
         positive = torch.sum(positive, dim=1)
         all_output = torch.cat([negative.unsqueeze(-1), positive.unsqueeze(-1)], 1)
-        return nn.CrossEntropyLoss()(all_output, labels).to(self.device)  # TODO: what range does the output have?
+        return nn.CrossEntropyLoss()(all_output, labels).to(self.device)

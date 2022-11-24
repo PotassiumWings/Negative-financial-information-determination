@@ -81,7 +81,7 @@ class Dataset:
                         # id, title, text, entity, negative, key_entity
                         label = reduce(lambda x, y: x or y == entity, key_entities, False)
 
-                    # temporarily separate text and entity  TODO
+                    # temporarily separate text and entity
                     contents.append((text_token_ids, text_seq_len, text_mask, prompt_pos,
                                      entity_token_ids, entity_seq_len, entity_mask, label))
         return contents
