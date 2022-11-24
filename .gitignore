@@ -3,3 +3,4 @@ bert-base-chinese/*
 data/*
 logs/*
 saved_dict/*
+history_data/*
