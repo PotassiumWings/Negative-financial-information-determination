@@ -41,7 +41,7 @@ class BasicModel(nn.Module):
         # max_hs_entity = self.dropout(max_pooling_with_mask(hidden_entity, mask_entity))
 
         # squeeze only if loss is BCE/BCEWithLogits
-        out = self.fc(max_hs_text).squeeze()
+        out = self.fc(max_hs_text).squeeze()  # TODO: batch_size = 1, squeeze bad
         # out = self.fc(torch.cat([max_hs_text, max_hs_entity], dim=-1)).squeeze()
         if self.config.loss == "BCELoss":
             out = F.sigmoid(out)

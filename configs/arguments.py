@@ -16,7 +16,7 @@ class TrainingArguments(BaseModel):
 
     learning_rate: float = Field(5e-5)
     num_epoches: int = Field(10)
-    show_period: int = Field(10)
+    show_period: int = Field(80)
 
     hidden_dropout_prob: float = Field(0.1)
     hidden_size: int = Field(768)
@@ -28,13 +28,13 @@ class TrainingArguments(BaseModel):
 
     seed: int = Field(0)
     batch_size: int = Field(8)
+    accumulate: int = Field(8)
     loss: str = Field("BCEWithLogitsLoss")
     label_smoothing: float = Field(0.001)
 
     prompt_positive: str = Field("好赞")
     prompt_negative: str = Field("差坏")
     prompt: bool = Field(False)
-    vocab_size: int = Field(21128)
 
     model_filename: str = Field("")
 

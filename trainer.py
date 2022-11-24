@@ -34,6 +34,7 @@ class Trainer:
             # text: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
             # entity: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
             # label: tensor[8], 0/1 y
+            accumulate_round = 0
             for i, (text, entity, label) in enumerate(train_iter):
                 # outputs: [8]  or [8, 2] if cross entropy
                 outputs = self.model(text, entity)
@@ -41,14 +42,20 @@ class Trainer:
 
                 loss = self.loss(outputs, label)
                 loss.backward()
-                optimizer.step()
+
+                # accumulate, small batch size
+                accumulate_round += 1
+                should_step = accumulate_round % (self.config.accumulate // self.config.batch_size) == 0
+                if should_step:
+                    optimizer.step()
+
                 logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, "
-                             f"loss: {round(loss.item(), 4)}")
+                             f"loss: {round(loss.item(), 4)}, step: {should_step}")
 
                 trues.append(label)
                 predicts.append(outputs)
 
-                if current_batch % self.config.show_period == 0:
+                if current_batch * self.config.batch_size % self.config.show_period == 0:
                     # output accuracy
                     train_acc = self.calc_train_acc(trues, predicts)
                     val_acc, val_loss = self.eval(val_iter)
