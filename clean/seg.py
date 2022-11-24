@@ -11,13 +11,14 @@ import argparse
 USAGE = "usage:   python seg.py --path [file path] --seg [algorithm]"
 
 parser = argparse.ArgumentParser(USAGE)
-parser.add_argument('--path', default='E:/Dataset/Machine Learning/finance/train.csv')
+parser.add_argument('--path', default='E:/Dataset/Machine Learning/finance/test.csv')
 parser.add_argument('--mode', default='qaq')
 parser.add_argument('--topK', default=20)
 parser.add_argument('--ifStop', default=True)
 parser.add_argument('--stopFile', default='stopFile.txt')
 parser.add_argument('--regular', default=True)
-parser.add_argument('--clean', default='clean.csv')
+parser.add_argument('--clean', default='clean_test.csv')
+parser.add_argument('--test', default=True)
 
 args = parser.parse_args()
 data = pd.read_csv(args.path, header=0, engine='python', encoding='GB18030')
@@ -153,7 +154,10 @@ else:
     # 分词 + 拼接
     with open(args.clean, "w", newline='', encoding='GB18030') as f:
         writer = csv.writer(f)
-        writer.writerow(["id", "title", "text", "entity", "negative", "key_entity"])
+        if args.test:
+            writer.writerow(["id", "title", "text", "entity"])
+        else:
+            writer.writerow(["id", "title", "text", "entity", "negative", "key_entity"])
         for index, line in data.iterrows():
             title_cut = jieba.cut(line.title, cut_all=False)
             text_cut = jieba.cut(line.text, cut_all=False)
@@ -167,7 +171,10 @@ else:
                 if args.ifStop and word in stopList:
                     continue
                 new_text = new_text + word
-            if line.key_entity == "nan":
-                line.key_entity = None
-            writer.writerow([line.id, new_title, new_text, line.entity, line.negative, line.key_entity])
+            if args.test:
+                writer.writerow([line.id, new_title, new_text, line.entity])
+            else:
+                if line.key_entity == "nan":
+                    line.key_entity = None
+                writer.writerow([line.id, new_title, new_text, line.entity, line.negative, line.key_entity])
     f.close()

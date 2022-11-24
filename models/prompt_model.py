@@ -14,7 +14,7 @@ class PromptModel(nn.Module):
         super(PromptModel, self).__init__()
         self.config = config
         self.bert = AutoModelForMaskedLM.from_pretrained(config.model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name)会议
 
         # self.vocabs = json.load(open(os.path.join(self.config.model_name, "tokenizer.json"), "r", encoding="utf-8"))
 
