@@ -2,7 +2,6 @@
 # 输出分词和词频
 # 先用分词工具、再查漏补缺手工设置正则表达式
 
-import jieba
 import re
 import csv
 import jieba.analyse
@@ -24,7 +23,6 @@ args = parser.parse_args()
 data = pd.read_csv(args.path, header=0, engine='python', encoding='GB18030')
 data.dropna(axis=0, how="all", inplace=True)
 data = data.astype(str)
-# data.fillna(value='', inplace=True) #TODO
 
 
 def regular():
