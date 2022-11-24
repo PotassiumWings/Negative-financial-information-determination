@@ -34,7 +34,7 @@ class Trainer:
             # text: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
             # entity: [tensor[8, 512], tensor[8, 512], tensor[8, 512]]  x, seq_len, mask
             # label: tensor[8], 0/1 y
-            accumulate_round = 0
+            accumulate_round = 1
             for i, (text, entity, label) in enumerate(train_iter):
                 # outputs: [8]  or [8, 2] if cross entropy
                 outputs = self.model(text, entity)
