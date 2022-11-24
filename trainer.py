@@ -38,7 +38,6 @@ class Trainer:
             for i, (text, entity, label) in enumerate(train_iter):
                 # outputs: [8]  or [8, 2] if cross entropy
                 outputs = self.model(text, entity)
-                self.model.zero_grad()
 
                 loss = self.loss(outputs, label)
                 loss.backward()
@@ -48,6 +47,7 @@ class Trainer:
                 should_step = accumulate_round % (self.config.accumulate // self.config.batch_size) == 0
                 if should_step:
                     optimizer.step()
+                    optimizer.zero_grad()
 
                 logging.info(f"Training, {i}/{len(train_iter)}, {epoch}/{self.config.num_epoches}, "
                              f"loss: {round(loss.item(), 4)}, step: {should_step}")

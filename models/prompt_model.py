@@ -5,6 +5,7 @@ import logging
 import torch.nn as nn
 from transformers import AutoModelForMaskedLM
 
+from transformers import AutoTokenizer
 from configs.arguments import TrainingArguments
 
 
@@ -13,18 +14,21 @@ class PromptModel(nn.Module):
         super(PromptModel, self).__init__()
         self.config = config
         self.bert = AutoModelForMaskedLM.from_pretrained(config.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name)
 
-        self.vocabs = json.load(open(os.path.join(self.config.model_name, "tokenizer.json"), "r", encoding="utf-8"))
+        # self.vocabs = json.load(open(os.path.join(self.config.model_name, "tokenizer.json"), "r", encoding="utf-8"))
 
         self.prompt_positives = config.prompt_positive
         self.prompt_negatives = config.prompt_negative
         self.prompt_positives_indexes = self._get_index(self.prompt_positives)
         self.prompt_negatives_indexes = self._get_index(self.prompt_negatives)
         assert len(self.prompt_negatives) == len(self.prompt_positives)
+        logging.info(f"[MASK]: {self._get_index('[MASK]')}, <mask>: {self._get_index('<mask>')}")
         logging.info(f"Prompt: + {self.prompt_positives_indexes} - {self.prompt_negatives_indexes}")
 
     def _get_index(self, s):
-        result = [self.vocabs["model"]["vocab"][ch] for ch in s]
+        # result = [self.vocabs["model"]["vocab"][ch] for ch in s]
+        result = [self.tokenizer.encode(ch, add_special_tokens=False) for ch in s]
         return result
 
     def forward(self, x1, x2):

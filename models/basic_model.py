@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from transformers import BertModel
+from transformers import AutoModel
 
 from configs.arguments import TrainingArguments
 
@@ -23,7 +23,7 @@ class BasicModel(nn.Module):
         if config.loss == "CrossEntropyLoss":
             self.out_dim = 2
 
-        self.bert = BertModel.from_pretrained(config.model_name)
+        self.bert = AutoModel.from_pretrained(config.model_name)
         self.dropout = nn.Dropout(p=config.hidden_dropout_prob, inplace=False)
         self.fc = nn.Linear(config.hidden_size, self.out_dim)
         # self.fc = nn.Linear(config.hidden_size * 2, self.out_dim)
@@ -41,7 +41,7 @@ class BasicModel(nn.Module):
         # max_hs_entity = self.dropout(max_pooling_with_mask(hidden_entity, mask_entity))
 
         # squeeze only if loss is BCE/BCEWithLogits
-        out = self.fc(max_hs_text).squeeze()  # TODO: batch_size = 1, squeeze bad
+        out = self.fc(max_hs_text).squeeze(1)
         # out = self.fc(torch.cat([max_hs_text, max_hs_entity], dim=-1)).squeeze()
         if self.config.loss == "BCELoss":
             out = F.sigmoid(out)

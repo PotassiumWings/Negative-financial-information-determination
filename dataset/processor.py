@@ -5,7 +5,7 @@ import torch
 import tqdm
 from numpy import ceil
 from functools import reduce
-from transformers import BertTokenizer
+from transformers import AutoTokenizer
 
 from configs.arguments import TrainingArguments
 
@@ -14,7 +14,7 @@ class Dataset:
     def __init__(self, config: TrainingArguments):
         self.config = config
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.tokenizer = BertTokenizer.from_pretrained(self.config.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name)
 
         self.f_max_seq_len = self.config.f_max_seq_len
         self.t_max_seq_len = self.config.max_seq_len - self.f_max_seq_len
@@ -63,7 +63,7 @@ class Dataset:
                         row[2]
                     )
                     if self.config.prompt:
-                        text = text + "总之，" + entity + "[MASK]"
+                        text = text + "总之，" + entity + "[MASK]"  # TODO: new patterns
                     else:
                         text = text + "上文主要评论的是" + entity
 
