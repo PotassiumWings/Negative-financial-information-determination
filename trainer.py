@@ -71,15 +71,22 @@ class Trainer:
         self.model.eval()
         # total_loss = 0
         trues, predicts = [], []
+        pred_zero, pred_one = [], []
         logging.info("Evaluating...")
         with torch.no_grad():
             for i, (text, entity, label) in enumerate(val_iter):
                 outputs = self.model(text, entity)
                 trues.append(label)
                 predicts.append(outputs)
+                if self.config.prompt:
+                    pred_one.append(outputs[1])
+                    pred_zero.append(outputs[0])
 
             val_acc = self.calc_train_acc(trues, predicts)
-            val_loss = self.loss(torch.cat(predicts), torch.cat(trues)).item()
+            if self.config.prompt:
+                val_loss = self.loss((torch.cat(pred_zero), torch.cat(pred_one)), torch.cat(trues)).item()
+            else:
+                val_loss = self.loss(torch.cat(predicts), torch.cat(trues)).item()
         return val_acc, val_loss
 
     def test(self, filename):
@@ -116,13 +123,15 @@ class Trainer:
         tot = 0
 
         for true, predict in zip(trues, predicts):
-            assert len(true) == len(predict) == self.config.batch_size
+            assert len(true) == self.config.batch_size
             if self.config.prompt:
+                assert len(true) == len(predict[0]) == len(predict[1])
                 true = true.cpu()
                 for i in range(len(true)):
-                    if torch.sum(predict[i].cpu()[1 - true[i]]) < torch.sum(predict[i].cpu()[true[i]]):
+                    if torch.sum(predict[1 - true[i]].cpu()[i]) < torch.sum(predict[true[i]].cpu()[i]):
                         tot += 1
             else:
+                assert len(true) == len(predict)
                 true, predict = true.cpu(), predict.cpu()
                 for i in range(len(true)):
                     if self.config.loss == "CrossEntropyLoss":

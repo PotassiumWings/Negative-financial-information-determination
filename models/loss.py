@@ -36,10 +36,7 @@ class Loss:
     def prompt_loss(self, output, labels):
         # output: positive b * 1, negative b * 1
         negative, positive = output
-        loss_positive = positive[torch.where(labels == 1)]
-        loss_negative = negative[torch.where(labels == 0)]
-        # [b, 2]
-        loss_all = torch.cat([loss_positive, loss_negative])
-
-        all_zero = torch.zeros(loss_all.shape).to(self.device)
-        return -nn.BCELoss()(loss_all / 100, all_zero).to(self.device)  # TODO: what range does the output have?
+        negative = torch.sum(negative, dim=1)
+        positive = torch.sum(positive, dim=1)
+        all_output = torch.cat([negative.unsqueeze(-1), positive.unsqueeze(-1)], 1)
+        return nn.CrossEntropyLoss()(all_output, labels).to(self.device)  # TODO: what range does the output have?
