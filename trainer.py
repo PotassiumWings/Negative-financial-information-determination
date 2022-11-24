@@ -16,18 +16,19 @@ class Trainer:
         self.time = time
         self.loss_config = Loss(config)
         self.loss = self.loss_config.get_loss()
-        self.best_val_loss = -1
+        self.best_val_loss = float('inf')
         self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
     def train(self, optimizer, learning_rate):
         train_iter, val_iter = self.dataset.train_iter, self.dataset.val_iter
-        # set state
-        self.model.train()
-        if optimizer == "AdamW":
+
+        if optimizer == "AdamW":  # pretrain
             optimizer = AdamW(self.model.parameters(), lr=learning_rate)
-        elif optimizer == "SGD":
+        elif optimizer == "SGD":  # fine-tune
             optimizer = SGD(self.model.parameters(), lr=learning_rate)
-        self.best_val_loss = float('inf')
+            self.model.load_state_dict(torch.load(self.save_path))
+
+        self.model.train()
         last_improve = 0  # last time to update best_val_loss
         current_batch = 1
 
