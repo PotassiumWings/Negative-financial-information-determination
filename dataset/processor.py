@@ -19,8 +19,8 @@ class Dataset:
         self.f_max_seq_len = self.config.f_max_seq_len
         self.t_max_seq_len = self.config.max_seq_len - self.f_max_seq_len
 
-        train_file_path = config.train_file
-        test_file_path = config.test_file
+        train_file_path = config.data_path + config.data_prefix + config.train_file
+        test_file_path = config.data_path + config.data_prefix + config.test_file
         self.max_seq_len = config.max_seq_len
 
         # test

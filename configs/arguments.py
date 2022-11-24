@@ -5,8 +5,10 @@ from pydantic import BaseModel, Field
 class TrainingArguments(BaseModel):
     model_name: str = Field("bert-base-chinese")
 
-    train_file: str = Field("./data/train.csv")
-    test_file: str = Field("./data/test.csv")
+    data_path: str = Field("./data/")
+    data_prefix: str = Field("")
+    train_file: str = Field("train.csv")
+    test_file: str = Field("test.csv")
 
     max_seq_len: int = Field(512)
     f_max_seq_len: int = Field(129)
