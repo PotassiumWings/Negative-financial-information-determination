@@ -2,7 +2,7 @@ import logging
 
 import torch
 from torch import nn
-from torch.optim import Adam
+from torch.optim import Adam, AdamW, SGD
 
 from configs.arguments import TrainingArguments
 from models.loss import Loss
@@ -19,11 +19,14 @@ class Trainer:
         self.best_val_loss = -1
         self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
-    def train(self):
+    def train(self, optimizer, learning_rate):
         train_iter, val_iter = self.dataset.train_iter, self.dataset.val_iter
         # set state
         self.model.train()
-        optimizer = Adam(self.model.parameters(), lr=self.config.learning_rate)
+        if optimizer == "AdamW":
+            optimizer = AdamW(self.model.parameters(), lr=learning_rate)
+        elif optimizer == "SGD":
+            optimizer = SGD(self.model.parameters(), lr=learning_rate)
         self.best_val_loss = float('inf')
         last_improve = 0  # last time to update best_val_loss
         current_batch = 1

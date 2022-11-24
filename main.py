@@ -49,7 +49,9 @@ def main(config: TrainingArguments):
     logging.info("Start Training.")
 
     if config.model_filename == "":
-        trainer.train()
+        trainer.train("AdamW", config.learning_rate)
+        logging.info(f"Best val loss: {trainer.best_val_loss}")
+        trainer.train("SGD", config.learning_rate / 10)
         logging.info(f"Best val loss: {trainer.best_val_loss}")
     result = trainer.test(config.model_filename)
     generate_submission(result, dataset, time)
