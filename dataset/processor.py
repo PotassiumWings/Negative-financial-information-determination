@@ -67,6 +67,7 @@ class Dataset:
 
                     if self.config.prompt:
                         text = text + "总之，" + entity + self.config.mask_str  # TODO: new patterns
+                        # text = entity + self.config.mask_str + "！" + text
                     else:
                         text = text + "上文主要评论的是" + entity
 
