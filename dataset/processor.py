@@ -100,10 +100,6 @@ class Dataset:
             seq_len = self.max_seq_len
             prompt_pos = self.max_seq_len - 1
 
-        # roberta: prompt pos is seq_len - 2
-        if "roberta" in self.config.model_name:
-            prompt_pos -= 1
-
         return token_ids, seq_len, mask, prompt_pos
 
     def _get_test_data_iter(self):

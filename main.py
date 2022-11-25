@@ -51,9 +51,9 @@ def main(config: TrainingArguments):
     if config.model_filename == "":
         trainer.train("AdamW", config.learning_rate)
         logging.info(f"Best val loss: {trainer.best_val_loss}")
-        logging.info(f"Fine-tuning with SGD and lr {config.learning_rate / 10}...")
-        trainer.train("SGD", config.learning_rate / 10)
-        logging.info(f"Best val loss: {trainer.best_val_loss}")
+        # logging.info(f"Fine-tuning with SGD and lr {config.learning_rate / 10}...")
+        # trainer.train("SGD", config.learning_rate / 10)
+        # logging.info(f"Best val loss: {trainer.best_val_loss}")
     result = trainer.test(config.model_filename)
     generate_submission(result, dataset, time)
 

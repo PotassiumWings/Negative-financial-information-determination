@@ -33,8 +33,8 @@ class PromptModel(nn.Module):
             result = []
             for ch in s:
                 sub_result = self.tokenizer.encode(ch, add_special_tokens=False)
-                assert sub_result[0] == 0 and sub_result[1] == 6 and sub_result[3] == 2  # TODO: check this
-                result.append(sub_result[2])
+                assert sub_result[0] == 6 and len(sub_result) == 2, sub_result
+                result.append(sub_result[1])
         else:
             result = [self.tokenizer.encode(ch, add_special_tokens=False) for ch in s]
         return result
