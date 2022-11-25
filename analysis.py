@@ -1,7 +1,6 @@
 import re
-import matplotlib as mpl
-from matplotlib import pyplot as plt
 
+from matplotlib import pyplot as plt
 
 files = [
     "logs/log1123_200815.txt",
@@ -26,7 +25,6 @@ labels = [
     "lr 3e-6, prompt learning 2+2 AdamW+SGD",
     "lr 3e-6, prompt learning 2+2 clean"
 ]
-
 
 plt.figure(figsize=(20, 20))
 for i in range(len(files)):

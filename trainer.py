@@ -2,7 +2,7 @@ import logging
 
 import torch
 from torch import nn
-from torch.optim import Adam, AdamW, SGD
+from torch.optim import AdamW, SGD
 
 from configs.arguments import TrainingArguments
 from models.loss import Loss

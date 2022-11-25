@@ -1,6 +1,7 @@
-from configs.arguments import TrainingArguments
-import torch.nn as nn
 import torch
+import torch.nn as nn
+
+from configs.arguments import TrainingArguments
 
 
 class Loss:

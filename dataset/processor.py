@@ -1,10 +1,10 @@
 import csv
 import random
+from functools import reduce
 
 import torch
 import tqdm
 from numpy import ceil
-from functools import reduce
 from transformers import AutoTokenizer
 
 from configs.arguments import TrainingArguments
@@ -56,12 +56,15 @@ class Dataset:
 
                 for i in range(len(entities)):
                     entity = entities[i]
+                    text = row[2]
                     # replace entities that do not contain `entity` and not contained by `entity` to `其他实体`
-                    text = reduce(
-                        lambda x, y: x.replace(y, "其他实体"),
-                        filter(lambda x: x not in entity and entity not in x, entities),
-                        row[2]
-                    )
+                    if self.config.replace_entity:
+                        text = reduce(
+                            lambda x, y: x.replace(y, "其他实体"),
+                            filter(lambda x: x not in entity and entity not in x, entities),
+                            text
+                        )
+
                     if self.config.prompt:
                         text = text + "总之，" + entity + self.config.mask_str  # TODO: new patterns
                     else:

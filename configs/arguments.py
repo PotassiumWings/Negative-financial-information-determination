@@ -41,6 +41,8 @@ class TrainingArguments(BaseModel):
 
     model_filename: str = Field("")
     fine_tune: bool = Field(False)
+    replace_entity: bool = Field(True)
+
 
 # Create Parser and Parse Args
 parser = pydantic_argparse.ArgumentParser(
