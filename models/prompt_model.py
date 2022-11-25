@@ -36,14 +36,13 @@ class PromptModel(nn.Module):
                 assert sub_result[0] == 6 and len(sub_result) == 2, sub_result
                 result.append(sub_result[1])
         else:
-            result = [self.tokenizer.encode(ch, add_special_tokens=False) for ch in s]
+            result = [self.tokenizer.encode(ch, add_special_tokens=False)[0] for ch in s]
         return result
 
     def forward(self, x1, x2):
         # b * 512, b * 512, b
         context_text, mask_text, prompt_pos = x1[0], x1[2], x1[3]
         predict = self.bert(context_text, attention_mask=mask_text)[0]  # b, max_len, vocab_size
-
         positive_result, negative_result = [], []
         for i in range(self.config.batch_size):
             positive_result.append(predict[i][prompt_pos[i]][self.prompt_positives_indexes])
