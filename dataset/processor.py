@@ -63,7 +63,7 @@ class Dataset:
                         row[2]
                     )
                     if self.config.prompt:
-                        text = text + "总之，" + entity + "[MASK]"  # TODO: new patterns
+                        text = text + "总之，" + entity + self.config.mask_str  # TODO: new patterns
                     else:
                         text = text + "上文主要评论的是" + entity
 
@@ -99,6 +99,11 @@ class Dataset:
             token_ids = token_ids[:self.f_max_seq_len] + token_ids[seq_len - self.t_max_seq_len:]
             seq_len = self.max_seq_len
             prompt_pos = self.max_seq_len - 1
+
+        # roberta: prompt pos is seq_len - 2
+        if "roberta" in self.config.model_name:
+            prompt_pos -= 1
+
         return token_ids, seq_len, mask, prompt_pos
 
     def _get_test_data_iter(self):

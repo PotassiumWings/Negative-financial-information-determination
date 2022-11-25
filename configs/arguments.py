@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 class TrainingArguments(BaseModel):
     model_name: str = Field("bert-base-chinese")
+    mask_str: str = Field("[MASK]")
 
     data_path: str = Field("./data/")
     data_prefix: str = Field("")

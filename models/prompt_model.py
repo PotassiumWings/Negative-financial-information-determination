@@ -28,8 +28,15 @@ class PromptModel(nn.Module):
         logging.info(f"Prompt: + {self.prompt_positives_indexes} - {self.prompt_negatives_indexes}")
 
     def _get_index(self, s):
-        result = [self.vocabs["model"]["vocab"][ch] for ch in s]
-        # result = [self.tokenizer.encode(ch, add_special_tokens=False) for ch in s]
+        # result = [self.vocabs["model"]["vocab"][ch] for ch in s]
+        if "roberta" in self.config.model_name:
+            result = []
+            for ch in s:
+                sub_result = self.tokenizer.encode(ch, add_special_tokens=False)
+                assert sub_result[0] == 0 and sub_result[1] == 6 and sub_result[3] == 2  # TODO: check this
+                result.append(sub_result[2])
+        else:
+            result = [self.tokenizer.encode(ch, add_special_tokens=False) for ch in s]
         return result
 
     def forward(self, x1, x2):
