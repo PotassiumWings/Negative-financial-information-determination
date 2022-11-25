@@ -40,7 +40,7 @@ class TrainingArguments(BaseModel):
     prompt: bool = Field(False)
 
     model_filename: str = Field("")
-
+    fine_tune: bool = Field(False)
 
 # Create Parser and Parse Args
 parser = pydantic_argparse.ArgumentParser(

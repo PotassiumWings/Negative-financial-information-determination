@@ -28,7 +28,7 @@ class Dataset:
         self.max_index = 0  # 2;小资钱包 <-> 5
         self.label_to_index, self.index_to_label = {}, {}
 
-        if self.config.model_filename == "":
+        if self.config.model_filename == "" or self.config.fine_tune:
             self.train_data = self._load_data(train_file_path, is_test=False)
             self.train_iter, self.val_iter = self._get_train_val_data_iter()
         self.test_data = self._load_data(test_file_path, is_test=True)
