@@ -38,6 +38,7 @@ class TrainingArguments(BaseModel):
     prompt_positive: str = Field("好赞")
     prompt_negative: str = Field("差坏")
     prompt: bool = Field(False)
+    prompt_pattern: int = Field(0)
 
     model_filename: str = Field("")
     fine_tune: bool = Field(False)

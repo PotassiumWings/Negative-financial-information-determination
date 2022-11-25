@@ -23,6 +23,10 @@ class Dataset:
         test_file_path = config.data_path + config.data_prefix + config.test_file
         self.max_seq_len = config.max_seq_len
 
+        mask_token = self.tokenizer.encode(self.config.mask_str, add_special_tokens=False)
+        assert len(mask_token) == 1, mask_token
+        self.mask_token = mask_token
+
         # test
         self.test_labels = []  # row[0]
         self.max_index = 0  # 2;小资钱包 <-> 5
@@ -66,12 +70,17 @@ class Dataset:
                         )
 
                     if self.config.prompt:
-                        text = text + "总之，" + entity + self.config.mask_str  # TODO: new patterns
-                        # text = entity + self.config.mask_str + "！" + text
+                        if self.config.prompt_pattern == 0:
+                            text = text + "总之，" + entity + self.config.mask_str
+                        elif self.config.prompt_pattern == 1:
+                            text = entity + self.config.mask_str + "！" + text
+                        else:
+                            assert self.config.prompt_pattern == 2
+                            text = entity + "不好" + self.config.mask_str + text
                     else:
                         text = text + "上文主要评论的是" + entity
 
-                    text_token_ids, text_seq_len, text_mask, prompt_pos = self._get_token_ids(text)
+                    text_token_ids, text_seq_len, text_mask, prompt_pos = self._get_token_ids(text, require_prompt=True)
                     entity_token_ids, entity_seq_len, entity_mask, _ = self._get_token_ids(entity)
                     if is_test:
                         # id, title, text, entity
@@ -90,19 +99,27 @@ class Dataset:
                                      entity_token_ids, entity_seq_len, entity_mask, label))
         return contents
 
-    def _get_token_ids(self, text):
+    def _get_token_ids(self, text, require_prompt=False):
         token_ids = self.tokenizer.encode(text, add_special_tokens=self.config.add_special_tokens)
         seq_len = len(token_ids)
         if seq_len < self.max_seq_len:
             mask = [1] * len(token_ids) + [0] * (self.max_seq_len - seq_len)
             token_ids += [self.tokenizer.pad_token_id] * (self.max_seq_len - seq_len)
-            prompt_pos = seq_len - 1
         else:
             mask = [1] * self.max_seq_len
             # token_ids = token_ids[:self.max_seq_len]
             token_ids = token_ids[:self.f_max_seq_len] + token_ids[seq_len - self.t_max_seq_len:]
             seq_len = self.max_seq_len
-            prompt_pos = self.max_seq_len - 1
+
+        prompt_pos = -1
+        if require_prompt:
+            # mask_token appears, and only appears once
+            prompt_pos = token_ids.index(self.mask_token)
+            try:
+                token_ids[prompt_pos + len(str(self.mask_token)):].index(self.mask_token)
+                assert False
+            except ValueError:
+                pass
 
         return token_ids, seq_len, mask, prompt_pos
 
