@@ -29,7 +29,7 @@ class PromptModel(nn.Module):
 
     def _get_index(self, s):
         # result = [self.vocabs["model"]["vocab"][ch] for ch in s]
-        if "roberta" in self.config.model_name:
+        if "xlm-roberta" in self.config.model_name:
             result = []
             for ch in s:
                 sub_result = self.tokenizer.encode(ch, add_special_tokens=False)
