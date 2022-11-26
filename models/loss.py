@@ -10,6 +10,7 @@ class Loss:
         self.label_smoothing = config.label_smoothing
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.gap = 0
+        self.prompt_loss_part = self.config.prompt_loss
         if self.config.prompt:
             self.loss = self.prompt_loss
         elif self.config.loss == "BCELoss":
@@ -34,14 +35,14 @@ class Loss:
     def ce_loss(self, output, labels):
         return nn.CrossEntropyLoss()(output, labels)
 
-    def prompt_loss(self, output, labels, prompt_loss):
+    def prompt_loss(self, output, labels):
         # output: positive b * 1, negative b * 1
         negative, positive = output
-        if prompt_loss == "max":
+        if self.prompt_loss_part == "max":
             negative = torch.max(negative, dim=1)[0]
             positive = torch.max(positive, dim=1)[0]
         else:
-            assert prompt_loss == "sum", prompt_loss
+            assert self.prompt_loss_part == "sum", self.prompt_loss_part
             negative = torch.sum(negative, dim=1)
             positive = torch.sum(positive, dim=1)
 
