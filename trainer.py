@@ -19,16 +19,16 @@ class Trainer:
         self.best_val_loss = float('inf')
         self.save_path = './saved_dict/' + self.config.model_name + self.time + '.ckpt'
 
-    def train(self, optimizer, learning_rate, load_path=None):
+    def load(self, load_path):
+        self.model.load_state_dict(torch.load(load_path))
+
+    def train(self, optimizer, learning_rate):
         train_iter, val_iter = self.dataset.train_iter, self.dataset.val_iter
 
         if optimizer == "AdamW":  # pretrain
             optimizer = AdamW(self.model.parameters(), lr=learning_rate)
         elif optimizer == "SGD":  # fine-tune
             optimizer = SGD(self.model.parameters(), lr=learning_rate)
-            if load_path is None:
-                load_path = self.save_path
-            self.model.load_state_dict(torch.load(load_path))
 
         self.model.train()
         last_improve = 0  # last time to update best_val_loss

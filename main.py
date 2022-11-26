@@ -48,12 +48,15 @@ def main(config: TrainingArguments):
 
     logging.info("Start Training.")
 
+    if config.model_from != "":
+        trainer.load(config.model_from)
+
     if config.model_filename == "":
         trainer.train("AdamW", config.learning_rate)
         logging.info(f"Best val loss: {trainer.best_val_loss}")
     if config.fine_tune:
         logging.info(f"Fine-tuning with SGD and lr {config.learning_rate / 10}...")
-        trainer.train("SGD", config.learning_rate / 10, config.model_filename)
+        trainer.train("SGD", config.learning_rate / 10)
         logging.info(f"Best val loss: {trainer.best_val_loss}")
     result = trainer.test(config.model_filename)
     generate_submission(result, dataset, time)

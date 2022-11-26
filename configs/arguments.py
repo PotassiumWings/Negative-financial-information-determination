@@ -42,6 +42,7 @@ class TrainingArguments(BaseModel):
     prompt_loss: str = Field("sum")
 
     model_filename: str = Field("")
+    model_from: str = Field("")
     fine_tune: bool = Field(False)
     replace_entity: bool = Field(True)
 
