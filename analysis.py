@@ -3,24 +3,25 @@ import re
 from matplotlib import pyplot as plt
 
 labels = [
-    ("lr 2e-6, BCEWithLogitsLoss", "logs/log1123_200815.txt"),
-    ("lr 2e-6, CrossEntropyLoss", "logs/log1124_022448.txt"),
+    # ("lr 2e-6, BCEWithLogitsLoss", "logs/log1123_200815.txt"),
+    # ("lr 2e-6, CrossEntropyLoss", "logs/log1124_022448.txt"),
     ("lr 2e-6, prompt learning 2+2", "logs/log1124_040310.txt"),
     # ("lr 2e-6, prompt learning 1+1", "logs/log1124_111248.txt"),
     # ("lr 2e-6, prompt learning 1+1'", "logs/log1124_140457.txt"),
-    ("lr 2e-6, BCEWithLogitsLoss, roberta-base", "logs/log1124_193204.txt"),
+    # ("lr 2e-6, BCEWithLogitsLoss, roberta-base", "logs/log1124_193204.txt"),
     ("lr 6e-6, prompt learning 2+2", "logs/log1125_010246.txt"),
     # ("lr 3e-6, prompt learning 2+2 AdamW+SGD", "logs/log1125_034622.txt"),
-    # ("lr 3e-6, prompt learning 2+2 clean", "logs/log1125_110908.txt"),
-    ("lr 5e-6, prompt learning - roberta-large-wwm", "logs/log1125_141628.txt"),
-    ("lr 5e-6, prompt learning - xlm-roberta-large", "logs/log1125_150142.txt"),
-    ("lr 6e-6, prompt learning clean_stop_", "logs/log1125_171329.txt")
+    ("lr 3e-6, prompt learning 2+2 clean", "logs/log1125_110908.txt"),
+    # ("lr 5e-6, prompt learning - roberta-large-wwm", "logs/log1125_141628.txt"),
+    # ("lr 5e-6, prompt learning - xlm-roberta-large", "logs/log1125_150142.txt"),
+    ("lr 6e-6, prompt learning clean_stop_", "logs/log1125_171329.txt"),
+    ("lr 6e-6, prompt learning half_clean_", "logs/log1126_001733.txt")
 ]
 pure_labels = [_[0] for _ in labels]
 
 
 def main():
-    plt.figure(figsize=(20, 20))
+    plt.figure(figsize=(10, 10))
     for i in range(len(labels)):
         label, filename = labels[i]
 

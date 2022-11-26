@@ -34,8 +34,13 @@ class PromptModel(nn.Module):
             result = []
             for ch in s:
                 sub_result = self.tokenizer.encode(ch, add_special_tokens=False)
-                assert sub_result[0] == 6 and len(sub_result) == 2, sub_result
-                result.append(sub_result[1])
+                if sub_result[0] == 6 and len(sub_result) == 2:
+                    result.append(sub_result[1])
+                else:
+                    # ？！
+                    sub_result = self.tokenizer.encode("测" + ch, add_special_tokens=False)
+                    assert sub_result[0] == 6 and len(sub_result) == 3, sub_result
+                    result.append(sub_result[2])
         else:
             result = [self.tokenizer.encode(ch, add_special_tokens=False)[0] for ch in s]
         return result

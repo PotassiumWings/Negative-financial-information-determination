@@ -25,7 +25,7 @@ class Dataset:
 
         mask_token = self.tokenizer.encode(self.config.mask_str, add_special_tokens=False)
         assert len(mask_token) == 1, mask_token
-        self.mask_token = mask_token
+        self.mask_token = mask_token[0]
 
         # test
         self.test_labels = []  # row[0]
