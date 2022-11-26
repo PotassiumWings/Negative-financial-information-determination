@@ -39,6 +39,7 @@ class TrainingArguments(BaseModel):
     prompt_negative: str = Field("差坏")
     prompt: bool = Field(False)
     prompt_pattern: int = Field(0)
+    prompt_loss: str = Field("sum")
 
     model_filename: str = Field("")
     fine_tune: bool = Field(False)

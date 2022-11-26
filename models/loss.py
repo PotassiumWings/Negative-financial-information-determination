@@ -34,10 +34,16 @@ class Loss:
     def ce_loss(self, output, labels):
         return nn.CrossEntropyLoss()(output, labels)
 
-    def prompt_loss(self, output, labels):
+    def prompt_loss(self, output, labels, prompt_loss):
         # output: positive b * 1, negative b * 1
         negative, positive = output
-        negative = torch.sum(negative, dim=1)
-        positive = torch.sum(positive, dim=1)
+        if prompt_loss == "max":
+            negative = torch.max(negative, dim=1)[0]
+            positive = torch.max(positive, dim=1)[0]
+        else:
+            assert prompt_loss == "sum", prompt_loss
+            negative = torch.sum(negative, dim=1)
+            positive = torch.sum(positive, dim=1)
+
         all_output = torch.cat([negative.unsqueeze(-1), positive.unsqueeze(-1)], 1)
         return nn.CrossEntropyLoss()(all_output, labels).to(self.device)

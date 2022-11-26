@@ -141,8 +141,12 @@ class Trainer:
                 assert len(true) == len(predict[0]) == len(predict[1])
                 true = true.cpu()
                 for i in range(len(true)):
-                    if torch.sum(predict[1 - true[i]].cpu()[i]) < torch.sum(predict[true[i]].cpu()[i]):
-                        tot += 1
+                    if self.config.prompt_loss == "sum":
+                        if torch.sum(predict[1 - true[i]].cpu()[i]) < torch.sum(predict[true[i]].cpu()[i]):
+                            tot += 1
+                    else:
+                        if torch.max(predict[1 - true[i]].cpu()[i]) < torch.max(predict[true[i]].cpu()[i]):
+                            tot += 1
             else:
                 assert len(true) == len(predict)
                 true, predict = true.cpu(), predict.cpu()

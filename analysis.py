@@ -5,17 +5,22 @@ from matplotlib import pyplot as plt
 labels = [
     # ("lr 2e-6, BCEWithLogitsLoss", "logs/log1123_200815.txt"),
     # ("lr 2e-6, CrossEntropyLoss", "logs/log1124_022448.txt"),
-    ("lr 2e-6, prompt learning 2+2", "logs/log1124_040310.txt"),
+    # ("lr 2e-6, prompt learning 2+2", "logs/log1124_040310.txt"),
     # ("lr 2e-6, prompt learning 1+1", "logs/log1124_111248.txt"),
     # ("lr 2e-6, prompt learning 1+1'", "logs/log1124_140457.txt"),
     # ("lr 2e-6, BCEWithLogitsLoss, roberta-base", "logs/log1124_193204.txt"),
-    ("lr 6e-6, prompt learning 2+2", "logs/log1125_010246.txt"),
+    # ("lr 6e-6, prompt learning 2+2", "logs/log1125_010246.txt"),
     # ("lr 3e-6, prompt learning 2+2 AdamW+SGD", "logs/log1125_034622.txt"),
-    ("lr 3e-6, prompt learning 2+2 clean", "logs/log1125_110908.txt"),
+    # ("lr 3e-6, prompt learning 2+2 clean", "logs/log1125_110908.txt"),
     # ("lr 5e-6, prompt learning - roberta-large-wwm", "logs/log1125_141628.txt"),
     # ("lr 5e-6, prompt learning - xlm-roberta-large", "logs/log1125_150142.txt"),
-    ("lr 6e-6, prompt learning clean_stop_", "logs/log1125_171329.txt"),
-    ("lr 6e-6, prompt learning half_clean_", "logs/log1126_001733.txt")
+    # ("lr 6e-6, prompt learning clean_stop_", "logs/log1125_171329.txt"),
+    # ("lr 6e-6, prompt learning half_clean_", "logs/log1126_001733.txt"),
+    ("lr 5e-6, prompt learning nre clean_stop_ pattern 0 - xlm-roberta-large", "logs/log1126_012257.txt"),
+    ("lr 5e-6, prompt learning nre clean_stop_ pattern 1", "logs/log1126_034803.txt"),
+    ("lr 5e-6, prompt learning nre clean_stop_ pattern 2", "logs/log1126_063124.txt"),
+    # ("lr 6e-6, prompt learning --no-replace-entity pattern 2 - xlm-roberta-large", "logs/log1126_111139.txt"),
+
 ]
 pure_labels = [_[0] for _ in labels]
 
@@ -49,7 +54,7 @@ def main():
         try:
             process_f(filename)
         except Exception:
-            process_f(filename, "")
+            process_f(filename, "gbk")
 
     leg = plt.legend(pure_labels)
     for line in leg.get_lines():

@@ -53,5 +53,6 @@ class PromptModel(nn.Module):
         for i in range(self.config.batch_size):
             positive_result.append(predict[i][prompt_pos[i]][self.prompt_positives_indexes])
             negative_result.append(predict[i][prompt_pos[i]][self.prompt_negatives_indexes])
+        # b * len(prompt_positive)
         pos_tensor, neg_tensor = torch.stack(positive_result), torch.stack(negative_result)
         return neg_tensor, pos_tensor

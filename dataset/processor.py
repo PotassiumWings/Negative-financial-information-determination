@@ -70,12 +70,12 @@ class Dataset:
                         )
 
                     if self.config.prompt:
-                        if self.config.prompt_pattern == 0:
+                        if self.config.prompt_pattern == 0:  # xxx，总之，<entity>[好/坏]
                             text = text + "总之，" + entity + self.config.mask_str
-                        elif self.config.prompt_pattern == 1:
+                        elif self.config.prompt_pattern == 1:  # <entity>[好/坏]！xxx
                             text = entity + self.config.mask_str + "！" + text
                         else:
-                            assert self.config.prompt_pattern == 2
+                            assert self.config.prompt_pattern == 2  # <entity>不好[？/！]xxx
                             text = entity + "不好" + self.config.mask_str + text
                     else:
                         text = text + "上文主要评论的是" + entity
