@@ -23,6 +23,9 @@ class Loss:
         else:
             raise NotImplementedError(f"This loss {self.config.loss} is not implemented.")
 
+        if self.config.judge_gap != 1234:
+            self.gap = self.config.judge_gap
+
     def get_loss(self):
         return self.loss
 

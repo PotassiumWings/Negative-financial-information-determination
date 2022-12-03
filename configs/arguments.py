@@ -46,6 +46,8 @@ class TrainingArguments(BaseModel):
     fine_tune: bool = Field(False)
     replace_entity: bool = Field(True)
 
+    judge_gap: float = Field(1234)
+
 
 # Create Parser and Parse Args
 parser = pydantic_argparse.ArgumentParser(
