@@ -119,7 +119,7 @@ class Trainer:
                     neg, pos = outputs
                     neg, pos = neg.cpu(), pos.cpu()
                     for sub_label, sub_neg, sub_pos in zip(label, neg, pos):
-                        if torch.sum(sub_neg) < torch.sum(sub_pos):
+                        if torch.max(sub_neg) < torch.max(sub_pos):
                             result.add(sub_label)
                 else:
                     predicts = outputs.cpu().numpy()
